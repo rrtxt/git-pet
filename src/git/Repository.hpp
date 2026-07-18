@@ -1,15 +1,32 @@
 #pragma once
 
+#include <filesystem>
 #include <git2.h>
 #include <git2/types.h>
-#include <string>
+
+#include <git/Branch.hpp>
+#include <git/Commit.hpp>
+#include <git/Status.hpp>
+#include <vector>
 
 class Repository {
 public:
-  Repository(std::string path);
-  int commitCount();
+  explicit Repository(const std::filesystem::path &path);
+
+  Branch currentBranch() const;
+
+  int commitCount() const;
+
+  Commit head() const;
+
+  std::vector<Commit> history(size_t limit = 20) const;
+
+  Status status() const;
+
+  bool isDirty() const;
+
   ~Repository();
 
 private:
-  git_repository *repo_;
+  git_repository *repo;
 };

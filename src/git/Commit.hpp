@@ -1,0 +1,17 @@
+#include <ctime>
+#include <string>
+
+class Commit {
+public:
+  std::string hash() const;
+  std::string sortHash() const;
+  std::string message() const;
+  std::string author() const;
+  std::time_t date() const;
+
+private:
+  std::string _hash;
+  std::string _message;
+  std::string _author;
+  std::time_t _date;
+};

@@ -1,28 +1,20 @@
 #include "Repository.hpp"
+#include <filesystem>
+#include <format>
 #include <git2.h>
 #include <git2/repository.h>
 #include <stdexcept>
-/*
-class Repository {
-public:
-  Repository(const std::string &path) {
-    if (git_repository_open(&repo_, path.c_str()) != 0)
-      throw std::runtime_error("Cannot open repository");
-  }
 
-  int countCommit() { return 0; }
-
-  ~Repository() { git_repository_free(repo_); }
-
-private:
-  git_repository *repo_;
-}; */
-
-Repository::Repository(std::string path) {
-  if (git_repository_open(&repo_, path.c_str()) != 0)
-    throw std::runtime_error("Cannot open repository, repository %s not found");
+Repository::Repository(const std::filesystem::path &path) {
+  if (git_repository_open(
+          &repo, std::filesystem::absolute(path).string().c_str()) != 0)
+    throw std::runtime_error(
+        std::format("Cannot open repository, repository {} not found\n",
+                    path.relative_path().string()));
 }
 
-int Repository::commitCount() { return 0; }
+Branch Repository::currentBranch() const {}
 
-Repository::~Repository() { git_repository_free(repo_); }
+int Repository::commitCount() const { return 0; }
+
+Repository::~Repository() { git_repository_free(repo); }
