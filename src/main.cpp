@@ -1,4 +1,6 @@
 #include <cpptui.hpp>
+#include <filesystem>
+#include <git/GitLibrary.hpp>
 #include <git/Repository.hpp>
 #include <git2.h>
 #include <git2/repository.h>
@@ -47,8 +49,10 @@ int main() {
 
   app.register_exit_key('q');
   app.run(root); */
+  GitLibrary git;
 
-  Repository t_repo = Repository(".");
+  std::filesystem::path path = std::filesystem::current_path();
+  Repository t_repo = Repository(path);
 
   return 0;
 }
