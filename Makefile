@@ -9,12 +9,14 @@ BIN_DIR = bin
 
 # Output executable
 TARGET = $(BIN_DIR)/app
+LDFLAGS = -lgit2
 
 # Compiler flags
-CXXFLAGS = -Wall -Wextra -std=c++20 -I$(INC_DIR)
+CXXFLAGS = -Wall -Wextra -std=c++20 -I$(INC_DIR) -Isrc 
 
 # Find all source files
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+# SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+SRCS := $(shell find $(SRC_DIR) -name "*.cpp")
 
 # Convert src/main.cpp -> build/main.o
 OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
@@ -25,11 +27,11 @@ all: $(TARGET)
 # Link
 $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(OBJS) -o $@
+	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 
 # Compile
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Run program

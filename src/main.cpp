@@ -1,11 +1,29 @@
 #include <cpptui.hpp>
-#include <memory>
+#include <git/Repository.hpp>
+#include <git2.h>
+#include <git2/repository.h>
 #include <string>
 
 using namespace cpptui;
 
+std::string exec(const std::string &cmd) {
+  char buffer[128];
+  std::string result;
+
+  FILE *pipe = popen(cmd.c_str(), "r");
+  if (!pipe)
+    return "";
+
+  while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+    result += buffer;
+  }
+
+  pclose(pipe);
+  return result;
+}
+
 int main() {
-  App app;
+  /* App app;
 
   Theme::set_theme(Theme::Dark());
   auto root = std::make_shared<Align>();
@@ -28,7 +46,9 @@ int main() {
   content_container->add(pet_info_container);
 
   app.register_exit_key('q');
-  app.run(root);
+  app.run(root); */
+
+  Repository t_repo = Repository(".");
 
   return 0;
 }
