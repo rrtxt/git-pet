@@ -5,6 +5,7 @@
 #include <git2.h>
 #include <git2/repository.h>
 #include <string>
+#include <vector>
 
 using namespace cpptui;
 
@@ -25,34 +26,19 @@ std::string exec(const std::string &cmd) {
 }
 
 int main() {
-  /* App app;
-
-  Theme::set_theme(Theme::Dark());
-  auto root = std::make_shared<Align>();
-
-  auto main_layout = std::make_shared<Border>(BorderStyle::Rounded);
-  auto main_vertical = std::make_shared<Vertical>();
-
-  auto label = std::make_shared<Label>("Git-Pet");
-
-  auto content_container = std::make_shared<Horizontal>();
-  auto pet_container = std::make_shared<Border>(BorderStyle::Rounded);
-  auto pet_info_container = std::make_shared<Border>(BorderStyle::Rounded);
-
-  root->add(main_layout);
-  main_layout->add(main_vertical);
-
-  main_vertical->add(label);
-  main_vertical->add(content_container);
-  content_container->add(pet_container);
-  content_container->add(pet_info_container);
-
-  app.register_exit_key('q');
-  app.run(root); */
   GitLibrary git;
 
   std::filesystem::path path = std::filesystem::current_path();
-  Repository t_repo = Repository(path);
+  Repository repo = Repository(path);
+
+  std::vector<Commit> commits = repo.history();
+
+  for (Commit commit : commits) {
+    std::cout << "commit " << commit.hash() << std::endl;
+    std::cout << "Author: " << commit.author() << std::endl;
+    std::cout << "Date': " << commit.date() << std::endl;
+    std::cout << "Message: \n" << commit.message() << std::endl;
+  }
 
   return 0;
 }
