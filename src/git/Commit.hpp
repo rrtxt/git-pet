@@ -1,8 +1,10 @@
 #include <ctime>
+#include <git2/types.h>
 #include <string>
 
 class Commit {
 public:
+  Commit(git_commit *commit);
   std::string hash() const;
   std::string sortHash() const;
   std::string message() const;
