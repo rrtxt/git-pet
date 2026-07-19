@@ -14,8 +14,12 @@ Branch::Branch(git_reference *ref) {
   _name = git_reference_name(ref);
   _shortname = shortname;
   _is_head = git_branch_is_head(ref);
+
+  _ref = ref;
 }
 
 std::string Branch::name() const { return _name; };
 std::string Branch::shortname() const { return _shortname; };
 bool Branch::isHead() const { return _is_head; };
+
+Branch::~Branch() { git_reference_free(_ref); }
