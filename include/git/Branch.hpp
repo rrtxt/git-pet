@@ -7,12 +7,9 @@ public:
   std::string name() const;
   std::string shortname() const;
   bool isHead() const;
-  ~Branch();
 
 private:
   std::string _name;
   std::string _shortname;
   bool _is_head;
-
-  git_reference *_ref;
 };

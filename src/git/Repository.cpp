@@ -54,6 +54,22 @@ Branch Repository::currentBranch() const {
   return branch;
 }
 
-int Repository::commitCount() const { return 0; }
+int Repository::commitCount() const { return history().size(); }
+
+Commit Repository::head() const {
+  git_reference *head;
+  git_repository_head(&head, repo);
+
+  const git_oid *oid = git_reference_target(head);
+
+  git_commit *commit;
+  git_commit_lookup(&commit, repo, oid);
+
+  Commit new_commit(commit);
+
+  git_reference_free(head);
+
+  return new_commit;
+}
 
 Repository::~Repository() { git_repository_free(repo); }
