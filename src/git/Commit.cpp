@@ -14,9 +14,13 @@ Commit::Commit(git_commit *commit) {
   _message = git_commit_message(commit);
   _author = git_commit_author(commit)->email;
   _date = git_commit_time(commit);
+
+  _commit = commit;
 }
 
 std::string Commit::hash() const { return _hash; }
 std::string Commit::message() const { return _message; }
 std::string Commit::author() const { return _author; }
 std::time_t Commit::date() const { return _date; }
+
+Commit::~Commit() { git_commit_free(_commit); }
