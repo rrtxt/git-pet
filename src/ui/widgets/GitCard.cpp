@@ -11,13 +11,6 @@ Element GitCard(const Repository &repo) {
   int commitCount = repo.commitCount();
   Commit head = repo.head();
 
-  Canvas c(40, 20);
-
-  c.DrawPoint(5, 5, false);
-  c.DrawPointLine(0, 0, 20, 10);
-  c.DrawBlockCircle(20, 10, 5);
-
-  Element image = canvas(c);
   Element pet = vbox({
       hbox({
           Pixel(Color::Black),
@@ -44,7 +37,9 @@ Element GitCard(const Repository &repo) {
       text(format("Total Commit: {}", commitCount)),
       text(format("Last Commit: {}", head.sorthash())),
   });
-  Element card = vflow({center(pet) | flex, filler(), gitStats | flex});
+  Element card =
+      vflow({filler() | flex, center(pet) | flex, filler() | flex, gitStats}) |
+      border;
 
   return card;
 }
