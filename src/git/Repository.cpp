@@ -2,7 +2,9 @@
 #include <filesystem>
 #include <format>
 #include <git2.h>
+#include <git2/refs.h>
 #include <git2/repository.h>
+#include <git2/types.h>
 #include <stdexcept>
 #include <vector>
 
@@ -23,8 +25,9 @@ std::vector<Commit> Repository::history(size_t limit) const {
   std::vector<Commit> commits;
 
   git_oid oid;
+  size_t counter = 0;
 
-  while (git_revwalk_next(&oid, walker) == 0) {
+  while (git_revwalk_next(&oid, walker) == 0 && counter < limit) {
     git_commit *raw;
     git_commit_lookup(&raw, repo, &oid);
 
@@ -33,6 +36,7 @@ std::vector<Commit> Repository::history(size_t limit) const {
     commits.emplace_back(commit);
 
     git_commit_free(raw);
+    counter += 1;
   }
 
   git_revwalk_free(walker);
@@ -40,7 +44,18 @@ std::vector<Commit> Repository::history(size_t limit) const {
   return commits;
 }
 
-Branch Repository::currentBranch() const {}
+Branch Repository::currentBranch() const {
+  git_reference *ref;
+  const char *name = "HEAD";
+  if (git_repository_head(&ref, repo) != 0) {
+    throw std::runtime_error("Cannot get current branch");
+  }
+
+  Branch branch(ref);
+
+  git_reference_free(ref);
+  return branch;
+}
 
 int Repository::commitCount() const { return 0; }
 
