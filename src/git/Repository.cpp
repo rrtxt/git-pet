@@ -35,7 +35,6 @@ std::vector<Commit> Repository::history(size_t limit) const {
 
     commits.emplace_back(commit);
 
-    git_commit_free(raw);
     counter += 1;
   }
 
@@ -46,14 +45,12 @@ std::vector<Commit> Repository::history(size_t limit) const {
 
 Branch Repository::currentBranch() const {
   git_reference *ref;
-  const char *name = "HEAD";
   if (git_repository_head(&ref, repo) != 0) {
     throw std::runtime_error("Cannot get current branch");
   }
 
   Branch branch(ref);
 
-  git_reference_free(ref);
   return branch;
 }
 
