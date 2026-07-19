@@ -37,7 +37,7 @@ int main() {
 
   std::cout << "Current Branch: " << branch.shortname() << std::endl;
   std::cout << "Total Commit: " << commits.size() << std::endl;
-  std::cout << "Last Commit: " << commits[0].hash() << std::endl;
+  std::cout << "Last Commit: " << commits[0].sorthash() << std::endl;
   // std::cout << "Is HEAD: " << branch.isHead() << std::endl;
   /* for (Commit commit : commits) {
     std::cout << "commit " << commit.hash() << std::endl;

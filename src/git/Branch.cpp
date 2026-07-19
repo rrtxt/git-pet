@@ -1,4 +1,4 @@
-#include "git/Repository.hpp"
+#include <git/Branch.hpp>
 #include <git2/branch.h>
 #include <git2/refs.h>
 #include <git2/types.h>

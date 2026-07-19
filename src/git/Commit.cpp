@@ -1,5 +1,5 @@
 
-#include "git/Repository.hpp"
+#include "git/Commit.hpp"
 #include <git2/commit.h>
 #include <git2/oid.h>
 
@@ -19,6 +19,7 @@ Commit::Commit(git_commit *commit) {
 }
 
 std::string Commit::hash() const { return _hash; }
+std::string Commit::sorthash() const { return _hash.substr(0, 10); }
 std::string Commit::message() const { return _message; }
 std::string Commit::author() const { return _author; }
 std::time_t Commit::date() const { return _date; }

@@ -6,7 +6,6 @@
 
 #include <git/Branch.hpp>
 #include <git/Commit.hpp>
-#include <git/Status.hpp>
 #include <vector>
 
 class Repository {
@@ -20,8 +19,6 @@ public:
   Commit head() const;
 
   std::vector<Commit> history(size_t limit = 20) const;
-
-  Status status() const;
 
   bool isDirty() const;
 
