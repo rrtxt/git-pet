@@ -60,7 +60,22 @@ Branch Repository::currentBranch() const {
   return branch;
 }
 
-int Repository::commitCount() const { return history().size(); }
+int Repository::commitCount() const {
+  git_revwalk *walker;
+  git_revwalk_new(&walker, repo);
+  git_revwalk_push_head(walker);
+
+  git_oid oid;
+  int count = 0;
+
+  while (git_revwalk_next(&oid, walker) == 0) {
+    ++count;
+  }
+
+  git_revwalk_free(walker);
+
+  return count;
+}
 
 Commit Repository::head() const {
   git_reference *head;
