@@ -39,7 +39,9 @@ int main() {
   std::vector<Commit> commits = repo.history();
   Branch branch = repo.currentBranch();
 
-  Element card = GitCard(repo);
+  Pet pet("Milo");
+
+  Element card = GitCard(pet, repo);
 
   auto screen = Screen::Create(Dimension::Fit(card), Dimension::Full());
 
