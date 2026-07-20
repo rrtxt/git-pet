@@ -12,6 +12,8 @@ class Repository {
 public:
   explicit Repository(const std::filesystem::path &path);
 
+  std::string name() const;
+
   Branch currentBranch() const;
 
   int commitCount() const;
@@ -26,4 +28,5 @@ public:
 
 private:
   git_repository *repo;
+  std::string _name;
 };

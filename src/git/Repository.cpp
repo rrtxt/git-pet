@@ -14,7 +14,13 @@ Repository::Repository(const std::filesystem::path &path) {
     throw std::runtime_error(
         std::format("Cannot open repository, repository {} not found\n",
                     path.relative_path().string()));
+
+  const char *workdir = git_repository_workdir(repo);
+  std::filesystem::path p(workdir);
+  _name = p.parent_path().filename().string();
 }
+
+std::string Repository::name() const { return _name; }
 
 std::vector<Commit> Repository::history(size_t limit) const {
   git_revwalk *walker;
