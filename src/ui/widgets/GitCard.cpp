@@ -8,7 +8,7 @@ using namespace std;
 Element Pixel(Color color) { return text("  ") | bgcolor(color); }
 Element GitCard(Pet &pet, const Repository &repo) {
   Branch branch = repo.currentBranch();
-  int commitCount = repo.commitCount();
+  // int commitCount = repo.commitCount();
   Commit head = repo.head();
 
   Element pet_element = vbox({
@@ -37,11 +37,15 @@ Element GitCard(Pet &pet, const Repository &repo) {
       text(format("Stage: {}", pet.stage())),
   });
 
-  Element repoInfo = vflow({text(format("Repository: {}", repo.name()))});
+  Element repoInfo = vflow({
+      text(format("Repository: {}", repo.name())),
+      text(format("Branch: {}", branch.shortname())),
+  });
 
   Element gitStats = vflow({
-      text(format("Current Branch: {}", branch.shortname())),
-      text(format("Total Commit: {}", commitCount)),
+      text(format("Today's Commit: {}", repo.commitCountPerDay())),
+      text(format("This week: {}", repo.commitCountPerWeek())),
+      text(format("Total Commit: {}", repo.commitCount())),
       text(format("Last Commit: {}", head.sorthash())),
   });
   Element card =
