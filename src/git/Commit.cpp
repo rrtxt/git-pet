@@ -1,14 +1,15 @@
 
 #include "git/Commit.hpp"
 #include <git2/commit.h>
+#include <git2/deprecated.h>
 #include <git2/oid.h>
 
 Commit::Commit(git_commit *commit) {
   const git_oid *oid = git_commit_id(commit);
 
   // generate git normal hash size (40)
-  char sha[40] = {0};
-  git_oid_tostr(sha, 39, oid);
+  char sha[GIT_OID_HEXSZ + 1] = {0};
+  git_oid_tostr(sha, sizeof(sha), oid);
 
   _hash = sha;
   _message = git_commit_message(commit);
