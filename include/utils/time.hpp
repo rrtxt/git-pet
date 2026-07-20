@@ -1,13 +1,8 @@
 #include <ctime>
-struct WeekRange {
+struct TimeRange {
   time_t start;
   time_t end;
 };
 
-struct DayRange {
-  time_t start;
-  time_t end;
-};
-
-WeekRange getCurrentWeek();
-DayRange getCurrentDay();
+TimeRange getCurrentWeek();
+TimeRange getCurrentDay();

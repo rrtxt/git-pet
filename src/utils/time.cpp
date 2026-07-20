@@ -1,6 +1,6 @@
 #include <utils/time.hpp>
 
-WeekRange getCurrentWeek() {
+TimeRange getCurrentWeek() {
   time_t now = time(nullptr);
 
   std::tm local = *std::localtime(&now);
@@ -12,7 +12,7 @@ WeekRange getCurrentWeek() {
   local.tm_min = 0;
   local.tm_sec = 0;
 
-  WeekRange range;
+  TimeRange range;
   range.start = std::mktime(&local);
 
   local.tm_mday += 6;
@@ -25,7 +25,7 @@ WeekRange getCurrentWeek() {
   return range;
 }
 
-DayRange getCurrentDay() {
+TimeRange getCurrentDay() {
   time_t now = time(nullptr);
 
   std::tm local = *std::localtime(&now);
@@ -35,7 +35,7 @@ DayRange getCurrentDay() {
   local.tm_min = 0;
   local.tm_sec = 0;
 
-  DayRange range;
+  TimeRange range;
   range.start = std::mktime(&local);
 
   // End of today
