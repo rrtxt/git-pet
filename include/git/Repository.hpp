@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <filesystem>
 #include <git2.h>
 #include <git2/types.h>
@@ -17,6 +18,8 @@ public:
   Branch currentBranch() const;
 
   int commitCount() const;
+  int commitCountPerWeek() const;
+  int commitCountPerDay() const;
 
   Commit head() const;
 

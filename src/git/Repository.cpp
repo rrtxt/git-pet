@@ -2,10 +2,12 @@
 #include <filesystem>
 #include <format>
 #include <git2.h>
+#include <git2/commit.h>
 #include <git2/refs.h>
 #include <git2/repository.h>
 #include <git2/types.h>
 #include <stdexcept>
+#include <utils/time.hpp>
 #include <vector>
 
 Repository::Repository(const std::filesystem::path &path) {
@@ -35,7 +37,8 @@ std::vector<Commit> Repository::history(size_t limit) const {
 
   while (git_revwalk_next(&oid, walker) == 0 && counter < limit) {
     git_commit *raw;
-    git_commit_lookup(&raw, repo, &oid);
+    if (git_commit_lookup(&raw, repo, &oid) != 0)
+      continue;
 
     Commit commit(raw);
 
@@ -70,6 +73,61 @@ int Repository::commitCount() const {
 
   while (git_revwalk_next(&oid, walker) == 0) {
     ++count;
+  }
+
+  git_revwalk_free(walker);
+
+  return count;
+}
+
+int Repository::commitCountPerWeek() const {
+  git_revwalk *walker;
+  git_revwalk_new(&walker, repo);
+  git_revwalk_push_head(walker);
+
+  git_oid oid;
+  int count = 0;
+
+  WeekRange week = getCurrentWeek();
+  while (git_revwalk_next(&oid, walker) == 0) {
+    git_commit *commit;
+    if (git_commit_lookup(&commit, repo, &oid) != 0)
+      continue;
+
+    git_time_t time = git_commit_time(commit);
+
+    // When commit date outside current week range, break the loop
+    if (time >= week.start && time <= week.end) {
+      ++count;
+    }
+    git_commit_free(commit);
+  }
+
+  git_revwalk_free(walker);
+
+  return count;
+}
+
+int Repository::commitCountPerDay() const {
+  git_revwalk *walker;
+  git_revwalk_new(&walker, repo);
+  git_revwalk_push_head(walker);
+
+  git_oid oid;
+  int count = 0;
+
+  DayRange day = getCurrentDay();
+  while (git_revwalk_next(&oid, walker) == 0) {
+    git_commit *commit;
+    if (git_commit_lookup(&commit, repo, &oid) != 0)
+      continue;
+    git_time_t time = git_commit_time(commit);
+
+    // When commit date outside current day range, break the loop
+    if (time >= day.start && time <= day.end) {
+      ++count;
+    }
+    git_commit_free(commit);
   }
 
   git_revwalk_free(walker);
