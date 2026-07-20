@@ -7,7 +7,6 @@
 #include <git2/repository.h>
 #include <git2/types.h>
 #include <stdexcept>
-#include <utils/time.hpp>
 #include <vector>
 
 Repository::Repository(const std::filesystem::path &path) {
@@ -80,7 +79,7 @@ int Repository::commitCount() const {
   return count;
 }
 
-int Repository::commitCountPerWeek() const {
+int Repository::commitCountByTime(const TimeRange &range) const {
   git_revwalk *walker;
   git_revwalk_new(&walker, repo);
   git_revwalk_push_head(walker);
@@ -88,7 +87,6 @@ int Repository::commitCountPerWeek() const {
   git_oid oid;
   int count = 0;
 
-  WeekRange week = getCurrentWeek();
   while (git_revwalk_next(&oid, walker) == 0) {
     git_commit *commit;
     if (git_commit_lookup(&commit, repo, &oid) != 0)
@@ -96,8 +94,8 @@ int Repository::commitCountPerWeek() const {
 
     git_time_t time = git_commit_time(commit);
 
-    // When commit date outside current week range, break the loop
-    if (time >= week.start && time <= week.end) {
+    // When commit date outside current time range, break the loop
+    if (time >= range.start && time <= range.end) {
       ++count;
     }
     git_commit_free(commit);
@@ -108,31 +106,12 @@ int Repository::commitCountPerWeek() const {
   return count;
 }
 
+int Repository::commitCountPerWeek() const {
+  return commitCountByTime(getCurrentWeek());
+}
+
 int Repository::commitCountPerDay() const {
-  git_revwalk *walker;
-  git_revwalk_new(&walker, repo);
-  git_revwalk_push_head(walker);
-
-  git_oid oid;
-  int count = 0;
-
-  DayRange day = getCurrentDay();
-  while (git_revwalk_next(&oid, walker) == 0) {
-    git_commit *commit;
-    if (git_commit_lookup(&commit, repo, &oid) != 0)
-      continue;
-    git_time_t time = git_commit_time(commit);
-
-    // When commit date outside current day range, break the loop
-    if (time >= day.start && time <= day.end) {
-      ++count;
-    }
-    git_commit_free(commit);
-  }
-
-  git_revwalk_free(walker);
-
-  return count;
+  return commitCountByTime(getCurrentDay());
 }
 
 Commit Repository::head() const {

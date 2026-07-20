@@ -7,6 +7,7 @@
 
 #include <git/Branch.hpp>
 #include <git/Commit.hpp>
+#include <utils/time.hpp>
 #include <vector>
 
 class Repository {
@@ -18,6 +19,8 @@ public:
   Branch currentBranch() const;
 
   int commitCount() const;
+  int commitCountByTime(const TimeRange &range) const;
+
   int commitCountPerWeek() const;
   int commitCountPerDay() const;
 
