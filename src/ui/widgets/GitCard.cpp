@@ -6,12 +6,12 @@
 using namespace ftxui;
 using namespace std;
 Element Pixel(Color color) { return text("  ") | bgcolor(color); }
-Element GitCard(const Repository &repo) {
+Element GitCard(Pet &pet, const Repository &repo) {
   Branch branch = repo.currentBranch();
   int commitCount = repo.commitCount();
   Commit head = repo.head();
 
-  Element pet = vbox({
+  Element pet_element = vbox({
       hbox({
           Pixel(Color::Black),
           Pixel(Color::Red),
@@ -31,6 +31,13 @@ Element GitCard(const Repository &repo) {
           Pixel(Color::Black),
       }),
   });
+
+  Element petStats = vflow({
+      text(format("Pet: {}", pet.name())),
+      text(format("Stage: {}", pet.stage())),
+  });
+
+  Element repoInfo = vflow({text(format("Repository: {}", repo.name()))});
 
   Element gitStats = vflow({
       text(format("Current Branch: {}", branch.shortname())),
@@ -38,7 +45,8 @@ Element GitCard(const Repository &repo) {
       text(format("Last Commit: {}", head.sorthash())),
   });
   Element card =
-      vflow({filler() | flex, center(pet) | flex, filler() | flex, gitStats}) |
+      vflow({filler() | flex, center(pet_element) | flex, filler() | flex,
+             petStats, filler() | flex, repoInfo, filler() | flex, gitStats}) |
       border;
 
   return card;
