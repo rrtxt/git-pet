@@ -6,10 +6,30 @@
 using namespace ftxui;
 using namespace std;
 Element Pixel(Color color) { return text("  ") | bgcolor(color); }
-Element GitCard(Pet &pet, const Repository &repo) {
+
+Element RenderImage(const Image &image) {
+  Elements rows;
+
+  for (int y = 0; y < image.height(); y++) {
+    Elements cols;
+    for (int x = 0; x < image.width(); x++) {
+      auto p = image.at(x, y);
+
+      cols.push_back(Pixel(Color::RGBA(p.r, p.g, p.b, p.a)));
+    }
+
+    rows.push_back(hbox(std::move(cols)));
+  }
+
+  return vbox(std::move(rows));
+}
+
+Element GitCard(Pet &pet, const Repository &repo, const Image &petImage) {
   Branch branch = repo.currentBranch();
   // int commitCount = repo.commitCount();
   Commit head = repo.head();
+
+  Element image = RenderImage(petImage);
 
   Element pet_element = vbox({
       hbox({
@@ -49,8 +69,8 @@ Element GitCard(Pet &pet, const Repository &repo) {
       text(format("Last Commit: {}", head.sorthash())),
   });
   Element card =
-      vflow({filler() | flex, center(pet_element) | flex, filler() | flex,
-             petStats, filler() | flex, repoInfo, filler() | flex, gitStats}) |
+      vflow({filler() | flex, center(image) | flex, filler() | flex, petStats,
+             filler() | flex, repoInfo, filler() | flex, gitStats}) |
       border;
 
   return card;
