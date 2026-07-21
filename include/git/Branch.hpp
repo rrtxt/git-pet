@@ -1,3 +1,4 @@
+#pragma once
 #include <git2/types.h>
 #include <string>
 

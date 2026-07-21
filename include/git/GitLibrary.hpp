@@ -1,4 +1,4 @@
-
+#pragma once
 #include <git2/global.h>
 class GitLibrary {
 public:
