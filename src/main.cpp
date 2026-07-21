@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#define STB_IMAGE_IMPLEMENTATION
 using namespace ftxui;
 using namespace std;
 
@@ -41,9 +42,13 @@ int main() {
 
   Pet pet("Milo");
 
-  Element card = GitCard(pet, repo);
+  filesystem::path pet_path("assets/egg.png");
+  filesystem::path combined_path = path / pet_path;
+  Image image = Image::Load(combined_path);
 
-  auto screen = Screen::Create(Dimension::Fit(card), Dimension::Full());
+  Element card = GitCard(pet, repo, image);
+
+  auto screen = Screen::Create(Dimension::Fit(card), Dimension::Fit(card));
 
   Render(screen, card);
   screen.Print();
