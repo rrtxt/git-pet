@@ -1,77 +1,20 @@
-#include <format>
-#include <ftxui/dom/canvas.hpp>
-#include <ftxui/dom/elements.hpp>
 #include <screen/ui/widgets/GitCard.hpp>
+#include <screen/ui/widgets/PetView.hpp>
+#include <screen/ui/widgets/RepoInfo.hpp>
+#include <screen/ui/widgets/GitStats.hpp>
 
 using namespace ftxui;
-using namespace std;
-Element Pixel(Color color) { return text("  ") | bgcolor(color); }
-
-Element RenderImage(const Image &image) {
-  Elements rows;
-
-  for (int y = 0; y < image.height(); y++) {
-    Elements cols;
-    for (int x = 0; x < image.width(); x++) {
-      auto p = image.at(x, y);
-
-      cols.push_back(Pixel(Color::RGBA(p.r, p.g, p.b, p.a)));
-    }
-
-    rows.push_back(hbox(std::move(cols)));
-  }
-
-  return vbox(std::move(rows));
-}
 
 Element GitCard(Pet &pet, const Repository &repo, const Image &petImage) {
-  Branch branch = repo.currentBranch();
-  // int commitCount = repo.commitCount();
-  Commit head = repo.head();
-
-  Element image = RenderImage(petImage);
-
-  Element pet_element = vbox({
-      hbox({
-          Pixel(Color::Black),
-          Pixel(Color::Red),
-          Pixel(Color::Red),
-          Pixel(Color::Black),
-      }),
-      hbox({
-          Pixel(Color::Red),
-          Pixel(Color::White),
-          Pixel(Color::White),
-          Pixel(Color::Red),
-      }),
-      hbox({
-          Pixel(Color::Black),
-          Pixel(Color::Red),
-          Pixel(Color::Red),
-          Pixel(Color::Black),
-      }),
-  });
-
-  Element petStats = vflow({
-      text(format("Pet: {}", pet.name())),
-      text(format("Stage: {}", pet.stage())),
-  });
-
-  Element repoInfo = vflow({
-      text(format("Repository: {}", repo.name())),
-      text(format("Branch: {}", branch.shortname())),
-  });
-
-  Element gitStats = vflow({
-      text(format("Today's Commit: {}", repo.commitCountPerDay())),
-      text(format("This week: {}", repo.commitCountPerWeek())),
-      text(format("Total Commit: {}", repo.commitCount())),
-      text(format("Last Commit: {}", head.sorthash())),
-  });
   Element card =
-      vflow({filler() | flex, center(image) | flex, filler() | flex, petStats,
-             filler() | flex, repoInfo, filler() | flex, gitStats}) |
-      border;
+      vflow({
+          filler() | flex,
+          PetView(pet, petImage) | flex,
+          filler() | flex,
+          RepoInfo(repo),
+          filler() | flex,
+          GitStats(repo),
+      }) | border;
 
   return card;
 }
