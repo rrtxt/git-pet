@@ -6,8 +6,8 @@ using namespace std;
 
 Element RepoInfo(const Repository &repo) {
   Branch branch = repo.currentBranch();
-  return vflow({
-      text(format("Repository: {}", repo.name())),
-      text(format("Branch: {}", branch.shortname())),
+  return vbox({
+      text(format("Repository: {}", repo.name())) | bold,
+      text(format("Branch: {}", branch.shortname())) | dim,
   });
 }

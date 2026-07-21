@@ -6,7 +6,7 @@ using namespace std;
 
 Element GitStats(const Repository &repo) {
   Commit head = repo.head();
-  return vflow({
+  return vbox({
       text(format("Today's Commit: {}", repo.commitCountPerDay())),
       text(format("This week: {}", repo.commitCountPerWeek())),
       text(format("Total Commit: {}", repo.commitCount())),

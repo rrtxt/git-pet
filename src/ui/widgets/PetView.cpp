@@ -55,14 +55,15 @@ Element PetView(Pet &pet, const Image &petImage) {
     });
   }
 
-  Element petStats = vflow({
-      text(format("Pet: {}", pet.name())),
-      text(format("Stage: {}", pet.stage())),
+  Element petStats = vbox({
+      text(format("Pet: {}", pet.name())) | bold,
+      text(format("Stage: {}", pet.stage())) | dim,
   });
 
-  return vflow({
+  return vbox({
+      filler() | flex,
       center(image) | flex,
       filler() | flex,
-      petStats,
+      petStats | hcenter,
   });
 }

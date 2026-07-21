@@ -1,4 +1,5 @@
 #include "screen/ui/widgets/GitCard.hpp"
+#include "screen/ui/widgets/CenteredLayout.hpp"
 #include <filesystem>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/node.hpp>
@@ -48,9 +49,16 @@ int main() {
 
   Element card = GitCard(pet, repo, image);
 
-  auto screen = Screen::Create(Dimension::Fit(card), Dimension::Fit(card));
+  // Constrain the card to a fixed size of 60x25
+  card = card | size(WIDTH, EQUAL, 60) | size(HEIGHT, EQUAL, 25);
 
-  Render(screen, card);
+  // Create a full-screen terminal buffer
+  auto screen = Screen::Create(Dimension::Full());
+
+  // Center the card both horizontally and vertically using CenteredLayout
+  Element layout = CenteredLayout(std::move(card));
+
+  Render(screen, layout);
   screen.Print();
 
   return 0;
