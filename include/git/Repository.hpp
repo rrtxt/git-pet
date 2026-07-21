@@ -17,6 +17,7 @@ public:
   std::string name() const;
 
   Branch currentBranch() const;
+  std::vector<Branch> branches() const;
 
   int commitCount() const;
   int commitCountByTime(const TimeRange &range) const;

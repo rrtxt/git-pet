@@ -1,7 +1,9 @@
 #include "git/Repository.hpp"
+#include "git/Branch.hpp"
 #include <filesystem>
 #include <format>
 #include <git2.h>
+#include <git2/branch.h>
 #include <git2/commit.h>
 #include <git2/refs.h>
 #include <git2/repository.h>
@@ -60,6 +62,28 @@ Branch Repository::currentBranch() const {
   Branch branch(ref);
 
   return branch;
+}
+
+std::vector<Branch> Repository::branches() const {
+  git_branch_iterator *iter;
+  if (git_branch_iterator_new(&iter, repo, GIT_BRANCH_ALL) != 0) {
+    throw std::runtime_error("Cannot list all branch");
+  }
+
+  std::vector<Branch> branches;
+  git_reference *branch_ref;
+  git_branch_t branch_type;
+
+  while (git_branch_next(&branch_ref, &branch_type, iter) == 0) {
+    if (git_reference_is_branch(branch_ref) != 0) {
+      Branch branch(branch_ref);
+      branches.push_back(branch);
+    }
+  }
+
+  git_branch_iterator_free(iter);
+
+  return branches;
 }
 
 int Repository::commitCount() const {
