@@ -1,5 +1,6 @@
 #include "screen/ui/widgets/CenteredLayout.hpp"
 #include "screen/ui/widgets/GitCard.hpp"
+#include <chrono>
 #include <filesystem>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
@@ -13,26 +14,12 @@
 #include <git2.h>
 #include <git2/repository.h>
 #include <string>
+#include <thread>
 
 #define STB_IMAGE_IMPLEMENTATION
 using namespace ftxui;
 using namespace std;
-
-std::string exec(const std::string &cmd) {
-  char buffer[128];
-  std::string result;
-
-  FILE *pipe = popen(cmd.c_str(), "r");
-  if (!pipe)
-    return "";
-
-  while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-    result += buffer;
-  }
-
-  pclose(pipe);
-  return result;
-}
+using namespace std::chrono_literals;
 
 int main() {
   GitLibrary git;
@@ -41,8 +28,10 @@ int main() {
   Repository repo(path);
 
   filesystem::path pet_path("assets/egg.png");
-  filesystem::path combined_path = path / pet_path;
+  filesystem::path animation_path("assets/egg");
+  filesystem::path combined_path = path / animation_path;
   Pet pet("Milo", combined_path);
+  pet.animation().play();
 
   int active_view = 0;
   bool show_menu = false;
@@ -58,6 +47,16 @@ int main() {
     return CenteredLayout(std::move(card));
   });
 
+  std::atomic<bool> running = true;
+
+  std::thread animation_thread([&] {
+    while (running) {
+      std::this_thread::sleep_for(16ms);
+      screen.PostEvent(Event::Custom);
+    }
+  });
+
+  auto last = std::chrono::steady_clock::now();
   component = CatchEvent(component, [&](Event event) {
     if (event == Event::Tab) {
       show_menu = !show_menu;
@@ -89,10 +88,20 @@ int main() {
       screen.ExitLoopClosure()();
       return true;
     }
+    if (event == Event::Custom) {
+      auto now = std::chrono::steady_clock::now();
+      auto dt =
+          std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
+      last = now;
+
+      pet.update(dt);
+      return true;
+    }
     return false;
   });
 
   screen.Loop(component);
+  animation_thread.detach();
 
   return 0;
 }
