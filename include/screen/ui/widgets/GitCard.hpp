@@ -6,4 +6,4 @@
 
 using namespace ftxui;
 
-Element GitCard(Pet &pet, const Repository &repo, const Image &petImage);
+Element GitCard(Pet &pet, const Repository &repo, const Image &petImage, int activeView, bool showMenu, int selectedMenuItem);
