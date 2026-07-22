@@ -1,21 +1,18 @@
-#include "git/Branch.hpp"
 #include "screen/ui/widgets/CenteredLayout.hpp"
 #include "screen/ui/widgets/GitCard.hpp"
 #include <filesystem>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/event.hpp>
+#include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/node.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <ftxui/screen/terminal.hpp>
-#include <ftxui/component/screen_interactive.hpp>
-#include <ftxui/component/component.hpp>
-#include <ftxui/component/event.hpp>
 #include <git/GitLibrary.hpp>
 #include <git/Repository.hpp>
 #include <git2.h>
 #include <git2/repository.h>
-#include <iostream>
 #include <string>
-#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 using namespace ftxui;
@@ -43,11 +40,9 @@ int main() {
   std::filesystem::path path = std::filesystem::current_path();
   Repository repo(path);
 
-  Pet pet("Milo");
-
   filesystem::path pet_path("assets/egg.png");
   filesystem::path combined_path = path / pet_path;
-  Image image = Image::Load(combined_path);
+  Pet pet("Milo", combined_path);
 
   int active_view = 0;
   bool show_menu = false;
@@ -56,7 +51,8 @@ int main() {
   auto screen = ScreenInteractive::TerminalOutput();
 
   auto component = Renderer([&] {
-    Element card = GitCard(pet, repo, image, active_view, show_menu, selected_menu_item);
+    Element card =
+        GitCard(pet, repo, active_view, show_menu, selected_menu_item);
     // Constrain the card to a fixed size of 80x25
     card = card | size(WIDTH, EQUAL, 80) | size(HEIGHT, EQUAL, 25);
     return CenteredLayout(std::move(card));

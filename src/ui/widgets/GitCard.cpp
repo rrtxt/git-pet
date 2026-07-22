@@ -1,15 +1,16 @@
+#include <screen/ui/widgets/BranchesView.hpp>
+#include <screen/ui/widgets/CommitsView.hpp>
 #include <screen/ui/widgets/GitCard.hpp>
+#include <screen/ui/widgets/MainView.hpp>
 #include <screen/ui/widgets/PetView.hpp>
 #include <screen/ui/widgets/RepoInfo.hpp>
-#include <screen/ui/widgets/MainView.hpp>
-#include <screen/ui/widgets/CommitsView.hpp>
-#include <screen/ui/widgets/BranchesView.hpp>
 
 using namespace ftxui;
 
-Element GitCard(Pet &pet, const Repository &repo, const Image &petImage, int activeView, bool showMenu, int selectedMenuItem) {
-  Element left_column = PetView(pet, petImage);
-  
+Element GitCard(Pet &pet, const Repository &repo, int activeView, bool showMenu,
+                int selectedMenuItem) {
+  Element left_column = PetView(pet);
+
   Element content_pane;
   if (showMenu) {
     content_pane = vbox({
@@ -17,9 +18,15 @@ Element GitCard(Pet &pet, const Repository &repo, const Image &petImage, int act
         separator(),
         filler() | flex,
         vbox({
-            (selectedMenuItem == 0) ? (text("> Main Info   <") | bold | color(Color::Green)) : (text("  Main Info    ") | dim),
-            (selectedMenuItem == 1) ? (text("> Commit Info <") | bold | color(Color::Cyan)) : (text("  Commit Info  ") | dim),
-            (selectedMenuItem == 2) ? (text("> Branch Info <") | bold | color(Color::Yellow)) : (text("  Branch Info  ") | dim),
+            (selectedMenuItem == 0)
+                ? (text("> Main Info   <") | bold | color(Color::Green))
+                : (text("  Main Info    ") | dim),
+            (selectedMenuItem == 1)
+                ? (text("> Commit Info <") | bold | color(Color::Cyan))
+                : (text("  Commit Info  ") | dim),
+            (selectedMenuItem == 2)
+                ? (text("> Branch Info <") | bold | color(Color::Yellow))
+                : (text("  Branch Info  ") | dim),
         }) | hcenter,
         filler() | flex,
         separator(),
@@ -34,7 +41,7 @@ Element GitCard(Pet &pet, const Repository &repo, const Image &petImage, int act
     } else {
       active_view_el = BranchesView(repo);
     }
-    
+
     content_pane = vbox({
         active_view_el,
         filler() | flex,
@@ -49,12 +56,12 @@ Element GitCard(Pet &pet, const Repository &repo, const Image &petImage, int act
       content_pane | flex,
   });
 
-  Element card =
-      hbox({
-          left_column | size(WIDTH, EQUAL, 36),
-          separator(),
-          right_column | flex,
-      }) | border;
+  Element card = hbox({
+                     left_column | size(WIDTH, EQUAL, 36),
+                     separator(),
+                     right_column | flex,
+                 }) |
+                 border;
 
   return card;
 }

@@ -27,10 +27,10 @@ Element RenderImage(const Image &image) {
 }
 } // namespace
 
-Element PetView(Pet &pet, const Image &petImage) {
+Element PetView(Pet &pet) {
   Element image;
-  if (petImage.width() > 0 && petImage.height() > 0) {
-    image = RenderImage(petImage);
+  if (pet.image().width() > 0 && pet.image().height() > 0) {
+    image = RenderImage(pet.image());
   } else {
     // Fallback pixel art (pet_element)
     image = vbox({
