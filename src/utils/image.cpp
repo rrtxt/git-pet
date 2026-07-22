@@ -1,7 +1,13 @@
+#include <cstdint>
 #include <stdexcept>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize2.h>
+
 #include <utils/image.hpp>
 
 Image::Image(int width, int height) {
@@ -21,28 +27,32 @@ Image Image::Load(const std::filesystem::path &path) {
 
   Image img(width, height);
 
+  img._image.assign(image, image + width * height * 4);
   img._channel = desired_channels;
 
-  img._pixels.resize(width * height);
-  for (size_t y = 0; y < height; y++) {
-    for (size_t x = 0; x < width; x++) {
-      int index = (y * width + x) * desired_channels;
-      RGBA pixel = {image[index + 0], image[index + 1], image[index + 2],
-                    image[index + 3]};
-      // img._pixels.push_back(pixel);
-      img._pixels[y * width + x] = pixel;
-    }
-  }
   stbi_image_free(image);
 
   return img;
 }
 
-RGBA const &Image::at(int x, int y) const {
+void Image::resize(int width, int height) {
+  std::vector<uint8_t> resized_image(width * height * 4);
+  stbir_resize_uint8_srgb(_image.data(), _width, _height, 0,
+                          resized_image.data(), width, height, 0, STBIR_RGBA);
+
+  _width = width;
+  _height = height;
+  _image = std::move(resized_image);
+}
+
+RGBA const Image::at(int x, int y) const {
   if (x < 0 || x >= _width || y < 0 || y >= _height) {
     throw std::out_of_range("Pixel out of range");
   }
-  return _pixels[y * _width + x];
+  return RGBA{_image[((y * _width + x) * _channel) + 0],
+              _image[((y * _width + x) * _channel) + 1],
+              _image[((y * _width + x) * _channel) + 2],
+              _image[((y * _width + x) * _channel) + 3]};
 }
 
 int Image::width() const { return _width; }
