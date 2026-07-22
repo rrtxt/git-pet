@@ -10,9 +10,12 @@
 
 #include <utils/image.hpp>
 
-Image::Image(int width, int height) {
+Image::Image(int width, int height, int channel) {
   _width = width;
   _height = height;
+  _channel = channel;
+
+  _image = std::vector<uint8_t>(width * height * channel);
 }
 
 Image Image::Load(const std::filesystem::path &path) {
@@ -25,24 +28,22 @@ Image Image::Load(const std::filesystem::path &path) {
     throw std::runtime_error("Image is not found");
   }
 
-  Image img(width, height);
+  Image img(width, height, desired_channels);
 
   img._image.assign(image, image + width * height * 4);
-  img._channel = desired_channels;
 
   stbi_image_free(image);
 
   return img;
 }
 
-void Image::resize(int width, int height) {
-  std::vector<uint8_t> resized_image(width * height * 4);
-  stbir_resize_uint8_srgb(_image.data(), _width, _height, 0,
-                          resized_image.data(), width, height, 0, STBIR_RGBA);
+Image Image::Resized(int width, int height) {
+  Image output(width, height, _channel);
 
-  _width = width;
-  _height = height;
-  _image = std::move(resized_image);
+  stbir_resize_uint8_srgb(_image.data(), _width, _height, 0,
+                          output._image.data(), width, height, 0, STBIR_RGBA);
+
+  return output;
 }
 
 RGBA const Image::at(int x, int y) const {

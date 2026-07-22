@@ -13,8 +13,7 @@ struct RGBA {
 class Image {
 public:
   static Image Load(const std::filesystem::path &path);
-
-  void resize(int width, int height);
+  Image Resized(int width, int height);
 
   int width() const;
   int height() const;
@@ -22,7 +21,7 @@ public:
   const RGBA at(int x, int y) const;
 
 private:
-  Image(int width, int height);
+  Image(int width, int height, int channel);
 
   std::vector<uint8_t> _image;
   int _width;
