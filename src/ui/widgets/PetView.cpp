@@ -1,7 +1,7 @@
-#include <screen/ui/widgets/PetView.hpp>
+#include <format>
 #include <ftxui/dom/canvas.hpp>
 #include <ftxui/dom/elements.hpp>
-#include <format>
+#include <screen/ui/widgets/PetView.hpp>
 
 using namespace ftxui;
 using namespace std;

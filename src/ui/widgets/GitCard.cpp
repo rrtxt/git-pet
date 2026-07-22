@@ -51,7 +51,7 @@ Element GitCard(Pet &pet, const Repository &repo, const Image &petImage, int act
 
   Element card =
       hbox({
-          left_column | flex,
+          left_column | size(WIDTH, EQUAL, 36),
           separator(),
           right_column | flex,
       }) | border;

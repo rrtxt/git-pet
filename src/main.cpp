@@ -57,8 +57,8 @@ int main() {
 
   auto component = Renderer([&] {
     Element card = GitCard(pet, repo, image, active_view, show_menu, selected_menu_item);
-    // Constrain the card to a fixed size of 60x25
-    card = card | size(WIDTH, EQUAL, 60) | size(HEIGHT, EQUAL, 25);
+    // Constrain the card to a fixed size of 80x25
+    card = card | size(WIDTH, EQUAL, 80) | size(HEIGHT, EQUAL, 25);
     return CenteredLayout(std::move(card));
   });
 
