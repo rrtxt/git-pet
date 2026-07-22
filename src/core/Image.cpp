@@ -8,7 +8,7 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize2.h>
 
-#include <utils/image.hpp>
+#include <core/Image.hpp>
 
 Image::Image(int width, int height, int channel) {
   _width = width;
