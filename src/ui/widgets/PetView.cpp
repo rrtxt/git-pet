@@ -1,3 +1,4 @@
+#include "core/Image.hpp"
 #include <format>
 #include <ftxui/dom/canvas.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -29,8 +30,9 @@ Element RenderImage(const Image &image) {
 
 Element PetView(Pet &pet) {
   Element image;
-  if (pet.image().width() > 0 && pet.image().height() > 0) {
-    image = RenderImage(pet.image());
+  Image frame = pet.animationPlayer().currentFrame();
+  if (frame.width() > 0 && frame.height() > 0) {
+    image = RenderImage(frame);
   } else {
     // Fallback pixel art (pet_element)
     image = vbox({

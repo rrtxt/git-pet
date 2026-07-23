@@ -1,15 +1,9 @@
 #include "core/Pet.hpp"
-#include "core/Animation.hpp"
-#include <chrono>
 #include <string>
 
 std::string Pet::name() const { return _name; }
 
-const Image &Pet::image() const { return _currentAnimation.currentFrame(); }
-
-Animation &Pet::animation() { return _currentAnimation; }
-
-void Pet::update(std::chrono::milliseconds dt) { _currentAnimation.update(dt); }
+AnimationPlayer &Pet::animationPlayer() { return _animationPlayer; }
 
 std::string Pet::stage() const {
   switch (_stage) {

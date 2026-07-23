@@ -1,28 +1,25 @@
 #pragma once
-#include "Image.hpp"
-#include "core/Animation.hpp"
+#include "core/AnimationPlayer.hpp"
 #include <chrono>
-#include <filesystem>
 #include <string>
 
 enum class PetStage { Egg, Baby, Teen, Adult };
 
 class Pet {
 public:
-  Pet(std::string name, const std::filesystem::path &path,
+  Pet(std::string name, AnimationPlayer animationPlayer,
       PetStage stage = PetStage::Egg)
       : _name(std::move(name)), _stage(stage),
-        _currentAnimation(Animation::Load(path)) {};
+        _animationPlayer(animationPlayer) {};
 
   void update(std::chrono::milliseconds dt);
 
   std::string name() const;
   std::string stage() const;
-  const Image &image() const;
-  Animation &animation();
+  AnimationPlayer &animationPlayer();
 
 private:
   std::string _name;
   PetStage _stage;
-  Animation _currentAnimation;
+  AnimationPlayer _animationPlayer;
 };

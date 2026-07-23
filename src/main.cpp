@@ -1,3 +1,5 @@
+#include "core/Animation.hpp"
+#include "core/AnimationPlayer.hpp"
 #include "screen/ui/widgets/CenteredLayout.hpp"
 #include "screen/ui/widgets/GitCard.hpp"
 #include <chrono>
@@ -27,11 +29,16 @@ int main() {
   std::filesystem::path path = std::filesystem::current_path();
   Repository repo(path);
 
-  filesystem::path pet_path("assets/egg.png");
-  filesystem::path animation_path("assets/egg");
+  filesystem::path animation_path("assets/baby");
   filesystem::path combined_path = path / animation_path;
-  Pet pet("Milo", combined_path);
-  pet.animation().play();
+  Animation animation = Animation::Load(combined_path);
+  AnimationPlayer animationPlayer;
+  animationPlayer.add("egg", animation);
+
+  Pet pet("Milo", animationPlayer);
+
+  // pet.animation().play();
+  pet.animationPlayer().play("egg");
 
   int active_view = 0;
   bool show_menu = false;
@@ -49,6 +56,7 @@ int main() {
 
   std::atomic<bool> running = true;
 
+  // Run a thread to emit event to update pet animation
   std::thread animation_thread([&] {
     while (running) {
       std::this_thread::sleep_for(16ms);
@@ -94,7 +102,8 @@ int main() {
           std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
       last = now;
 
-      pet.update(dt);
+      // pet.update(dt);
+      pet.animationPlayer().update(dt);
       return true;
     }
     return false;
