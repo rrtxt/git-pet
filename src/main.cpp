@@ -1,5 +1,6 @@
 #include "core/Animation.hpp"
 #include "core/AnimationPlayer.hpp"
+#include "core/Pet.hpp"
 #include "screen/ui/widgets/CenteredLayout.hpp"
 #include "screen/ui/widgets/GitCard.hpp"
 #include <chrono>
@@ -15,13 +16,21 @@
 #include <git/Repository.hpp>
 #include <git2.h>
 #include <git2/repository.h>
+
+#include <algorithm>
+#include <cctype>
 #include <string>
 #include <thread>
-
 #define STB_IMAGE_IMPLEMENTATION
 using namespace ftxui;
 using namespace std;
 using namespace std::chrono_literals;
+
+std::string toLower(std::string str) {
+  std::transform(str.begin(), str.end(), str.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  return str;
+}
 
 int main() {
   GitLibrary git;
@@ -29,16 +38,32 @@ int main() {
   std::filesystem::path path = std::filesystem::current_path();
   Repository repo(path);
 
-  filesystem::path animation_path("assets/baby");
-  filesystem::path combined_path = path / animation_path;
-  Animation animation = Animation::Load(combined_path);
+  PetStage stage = PetStage::Egg;
+  int commitCount = repo.commitCount();
+  if (commitCount > 100) {
+    stage = PetStage::Adult;
+  } else if (commitCount > 50 && commitCount <= 100) {
+    stage = PetStage::Teen;
+  } else if (commitCount > 20 && commitCount <= 50) {
+    stage = PetStage::Baby;
+  } else {
+    stage = PetStage::Egg;
+  }
+
+  filesystem::path egg_path("assets/egg");
+  filesystem::path baby_path("assets/baby");
+  filesystem::path egg_animation_path = path / egg_path;
+  filesystem::path baby_animation_path = path / baby_path;
+  Animation eggAnimation = Animation::Load(egg_animation_path);
+  Animation babyAnimation = Animation::Load(baby_animation_path);
   AnimationPlayer animationPlayer;
-  animationPlayer.add("egg", animation);
 
-  Pet pet("Milo", animationPlayer);
+  animationPlayer.add("egg", eggAnimation);
+  animationPlayer.add("baby", babyAnimation);
 
-  // pet.animation().play();
-  pet.animationPlayer().play("egg");
+  Pet pet("Milo", animationPlayer, stage);
+
+  pet.animationPlayer().play(toLower(pet.stage()));
 
   int active_view = 0;
   bool show_menu = false;
