@@ -12,7 +12,9 @@ struct RGBA {
 
 class Image {
 public:
+  Image() : _width(0), _height(0), _channel(0) {}
   static Image Load(const std::filesystem::path &path);
+
   Image Resized(int width, int height);
 
   int width() const;

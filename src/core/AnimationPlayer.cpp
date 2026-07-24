@@ -26,8 +26,15 @@ void AnimationPlayer::play(std::string name) {
   _currentAnimation->play();
 }
 
-void AnimationPlayer::stop() { _currentAnimation->stop(); }
+void AnimationPlayer::stop() {
+  if (_currentAnimation)
+    _currentAnimation->stop();
+}
 
 const Image &AnimationPlayer::currentFrame() const {
+  if (!_currentAnimation) {
+    static const Image empty_image;
+    return empty_image;
+  }
   return _currentAnimation->currentFrame();
 }
