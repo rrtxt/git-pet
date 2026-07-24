@@ -2,6 +2,5 @@
 #include <ftxui/dom/elements.hpp>
 #include <git/Repository.hpp>
 
-using namespace ftxui;
+ftxui::Element BranchesView(const Repository &repo);
 
-Element BranchesView(const Repository &repo);

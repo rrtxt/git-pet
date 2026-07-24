@@ -4,10 +4,9 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/screen.hpp>
 
-using namespace ftxui;
-
 class MainMenuScreen {
 public:
   MainMenuScreen();
-  Component Render();
+  ftxui::Component Render();
 };
+

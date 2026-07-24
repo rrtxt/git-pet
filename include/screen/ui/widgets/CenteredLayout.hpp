@@ -1,6 +1,5 @@
 #pragma once
 #include <ftxui/dom/elements.hpp>
 
-using namespace ftxui;
+ftxui::Element CenteredLayout(ftxui::Element content);
 
-Element CenteredLayout(Element content);

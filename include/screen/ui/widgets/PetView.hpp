@@ -2,6 +2,5 @@
 #include "core/Pet.hpp"
 #include <ftxui/dom/elements.hpp>
 
-using namespace ftxui;
+ftxui::Element PetView(Pet &pet);
 
-Element PetView(Pet &pet);

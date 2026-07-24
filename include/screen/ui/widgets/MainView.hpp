@@ -2,6 +2,5 @@
 #include <ftxui/dom/elements.hpp>
 #include <git/Repository.hpp>
 
-using namespace ftxui;
+ftxui::Element MainView(const Repository &repo);
 
-Element MainView(const Repository &repo);

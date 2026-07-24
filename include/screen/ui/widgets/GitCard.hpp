@@ -3,7 +3,6 @@
 #include <ftxui/dom/elements.hpp>
 #include <git/Repository.hpp>
 
-using namespace ftxui;
+ftxui::Element GitCard(Pet &pet, const Repository &repo, int activeView, bool showMenu,
+                       int selectedMenuItem);
 
-Element GitCard(Pet &pet, const Repository &repo, int activeView, bool showMenu,
-                int selectedMenuItem);
