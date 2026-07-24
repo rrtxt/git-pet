@@ -10,7 +10,7 @@ public:
   Pet(std::string name, AnimationPlayer animationPlayer,
       PetStage stage = PetStage::Egg)
       : _name(std::move(name)), _stage(stage),
-        _animationPlayer(animationPlayer) {};
+        _animationPlayer(std::move(animationPlayer)) {};
 
   void update(std::chrono::milliseconds dt);
 

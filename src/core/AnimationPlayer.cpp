@@ -8,8 +8,8 @@ void AnimationPlayer::update(std::chrono::milliseconds dt) {
     _currentAnimation->update(dt);
 }
 
-void AnimationPlayer::add(std::string name, Animation &animation) {
-  _animationMap.emplace(name, animation);
+void AnimationPlayer::add(std::string name, Animation animation) {
+  _animationMap.emplace(std::move(name), std::move(animation));
 }
 
 void AnimationPlayer::play(std::string name) {

@@ -9,7 +9,7 @@ class AnimationPlayer {
 public:
   void update(std::chrono::milliseconds dt);
 
-  void add(std::string name, Animation &animation);
+  void add(std::string name, Animation animation);
 
   void play(std::string name);
   void stop();

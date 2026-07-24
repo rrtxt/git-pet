@@ -58,10 +58,10 @@ int main() {
   Animation babyAnimation = Animation::Load(baby_animation_path);
   AnimationPlayer animationPlayer;
 
-  animationPlayer.add("egg", eggAnimation);
-  animationPlayer.add("baby", babyAnimation);
+  animationPlayer.add("egg", std::move(eggAnimation));
+  animationPlayer.add("baby", std::move(babyAnimation));
 
-  Pet pet("Milo", animationPlayer, stage);
+  Pet pet("Milo", std::move(animationPlayer), stage);
 
   pet.animationPlayer().play(toLower(pet.stage()));
 
