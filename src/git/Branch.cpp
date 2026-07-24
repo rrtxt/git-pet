@@ -6,6 +6,7 @@
 
 Branch::Branch(git_reference *ref) {
   if (git_reference_is_branch(ref) == 0) {
+    git_reference_free(ref);
     throw std::runtime_error("Reference is not branch");
   }
   const char *shortname;
@@ -17,6 +18,7 @@ Branch::Branch(git_reference *ref) {
 
   git_reference_free(ref);
 }
+
 
 std::string Branch::name() const { return _name; };
 std::string Branch::shortname() const { return _shortname; };

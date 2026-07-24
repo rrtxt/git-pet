@@ -19,17 +19,27 @@ Repository::Repository(const std::filesystem::path &path) {
                     path.relative_path().string()));
 
   const char *workdir = git_repository_workdir(repo);
-  std::filesystem::path p(workdir);
-  _name = p.parent_path().filename().string();
+  if (workdir) {
+    std::filesystem::path p(workdir);
+    _name = p.parent_path().filename().string();
+  } else {
+    _name = path.filename().string();
+  }
 }
+
 
 std::string Repository::name() const { return _name; }
 
 std::vector<Commit> Repository::history(size_t limit) const {
-  git_revwalk *walker;
+  git_revwalk *walker = nullptr;
 
-  git_revwalk_new(&walker, repo);
-  git_revwalk_push_head(walker);
+  if (git_revwalk_new(&walker, repo) != 0) {
+    return {};
+  }
+  if (git_revwalk_push_head(walker) != 0) {
+    git_revwalk_free(walker);
+    return {};
+  }
 
   std::vector<Commit> commits;
 
@@ -37,7 +47,7 @@ std::vector<Commit> Repository::history(size_t limit) const {
   size_t counter = 0;
 
   while (git_revwalk_next(&oid, walker) == 0 && counter < limit) {
-    git_commit *raw;
+    git_commit *raw = nullptr;
     if (git_commit_lookup(&raw, repo, &oid) != 0)
       continue;
 
@@ -87,9 +97,14 @@ std::vector<Branch> Repository::branches() const {
 }
 
 int Repository::commitCount() const {
-  git_revwalk *walker;
-  git_revwalk_new(&walker, repo);
-  git_revwalk_push_head(walker);
+  git_revwalk *walker = nullptr;
+  if (git_revwalk_new(&walker, repo) != 0) {
+    return 0;
+  }
+  if (git_revwalk_push_head(walker) != 0) {
+    git_revwalk_free(walker);
+    return 0;
+  }
 
   git_oid oid;
   int count = 0;
@@ -104,15 +119,20 @@ int Repository::commitCount() const {
 }
 
 int Repository::commitCountByTime(const TimeRange &range) const {
-  git_revwalk *walker;
-  git_revwalk_new(&walker, repo);
-  git_revwalk_push_head(walker);
+  git_revwalk *walker = nullptr;
+  if (git_revwalk_new(&walker, repo) != 0) {
+    return 0;
+  }
+  if (git_revwalk_push_head(walker) != 0) {
+    git_revwalk_free(walker);
+    return 0;
+  }
 
   git_oid oid;
   int count = 0;
 
   while (git_revwalk_next(&oid, walker) == 0) {
-    git_commit *commit;
+    git_commit *commit = nullptr;
     if (git_commit_lookup(&commit, repo, &oid) != 0)
       continue;
 
@@ -139,13 +159,22 @@ int Repository::commitCountPerDay() const {
 }
 
 Commit Repository::head() const {
-  git_reference *head;
-  git_repository_head(&head, repo);
+  git_reference *head = nullptr;
+  if (git_repository_head(&head, repo) != 0) {
+    return Commit();
+  }
 
   const git_oid *oid = git_reference_target(head);
+  if (!oid) {
+    git_reference_free(head);
+    return Commit();
+  }
 
-  git_commit *commit;
-  git_commit_lookup(&commit, repo, oid);
+  git_commit *commit = nullptr;
+  if (git_commit_lookup(&commit, repo, oid) != 0) {
+    git_reference_free(head);
+    return Commit();
+  }
 
   Commit new_commit(commit);
 

@@ -5,8 +5,10 @@
 
 class Commit {
 public:
+  Commit() : _hash("0000000000000000000000000000000000000000"), _message("No commits yet"), _author("None"), _date(0) {}
   Commit(git_commit *commit);
   std::string hash() const;
+
   std::string sorthash() const;
   std::string message() const;
   std::string author() const;
