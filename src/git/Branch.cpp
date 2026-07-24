@@ -4,19 +4,16 @@
 #include <git2/types.h>
 #include <stdexcept>
 
-Branch::Branch(git_reference *ref) {
+Branch::Branch(const git_reference *ref) {
   if (git_reference_is_branch(ref) == 0) {
-    git_reference_free(ref);
     throw std::runtime_error("Reference is not branch");
   }
-  const char *shortname;
+  const char *shortname = nullptr;
   git_branch_name(&shortname, ref);
 
   _name = git_reference_name(ref);
-  _shortname = shortname;
+  _shortname = shortname ? shortname : "";
   _is_head = git_branch_is_head(ref);
-
-  git_reference_free(ref);
 }
 
 

@@ -52,6 +52,7 @@ std::vector<Commit> Repository::history(size_t limit) const {
       continue;
 
     Commit commit(raw);
+    git_commit_free(raw);
 
     commits.emplace_back(commit);
 
@@ -64,24 +65,25 @@ std::vector<Commit> Repository::history(size_t limit) const {
 }
 
 Branch Repository::currentBranch() const {
-  git_reference *ref;
+  git_reference *ref = nullptr;
   if (git_repository_head(&ref, repo) != 0) {
     throw std::runtime_error("Cannot get current branch");
   }
 
   Branch branch(ref);
+  git_reference_free(ref);
 
   return branch;
 }
 
 std::vector<Branch> Repository::branches() const {
-  git_branch_iterator *iter;
+  git_branch_iterator *iter = nullptr;
   if (git_branch_iterator_new(&iter, repo, GIT_BRANCH_ALL) != 0) {
     throw std::runtime_error("Cannot list all branch");
   }
 
   std::vector<Branch> branches;
-  git_reference *branch_ref;
+  git_reference *branch_ref = nullptr;
   git_branch_t branch_type;
 
   while (git_branch_next(&branch_ref, &branch_type, iter) == 0) {
@@ -89,6 +91,7 @@ std::vector<Branch> Repository::branches() const {
       Branch branch(branch_ref);
       branches.push_back(branch);
     }
+    git_reference_free(branch_ref);
   }
 
   git_branch_iterator_free(iter);
@@ -178,6 +181,7 @@ Commit Repository::head() const {
 
   Commit new_commit(commit);
 
+  git_commit_free(commit);
   git_reference_free(head);
 
   return new_commit;

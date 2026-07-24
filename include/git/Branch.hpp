@@ -4,7 +4,7 @@
 
 class Branch {
 public:
-  Branch(git_reference *ref);
+  Branch(const git_reference *ref);
   std::string name() const;
   std::string shortname() const;
   bool isHead() const;

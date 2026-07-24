@@ -4,7 +4,7 @@
 #include <git2/deprecated.h>
 #include <git2/oid.h>
 
-Commit::Commit(git_commit *commit) {
+Commit::Commit(const git_commit *commit) {
   const git_oid *oid = git_commit_id(commit);
 
   // generate git normal hash size (40)
@@ -15,8 +15,6 @@ Commit::Commit(git_commit *commit) {
   _message = git_commit_message(commit);
   _author = git_commit_author(commit)->email;
   _date = git_commit_time(commit);
-
-  git_commit_free(commit);
 }
 
 std::string Commit::hash() const { return _hash; }
