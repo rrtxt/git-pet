@@ -2,32 +2,30 @@
 #include "git/Repository.hpp"
 #include <algorithm>
 #include <cctype>
-#include <cstdint>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <git2/repository.h>
 #include <iostream>
-#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include <toml.hpp>
 
-Config Config::Load(Repository &repo) {
+// ==========================================
+// LocalConfig Implementation
+// ==========================================
+
+LocalConfig LocalConfig::Load(const Repository &repo) {
   std::filesystem::path config_path =
       std::filesystem::path(repo.directory()) / "pet.config";
 
-  std::cout << config_path << std::endl;
+  std::string id = "cat";
+  std::string display_name = repo.name();
 
-  // Load Local config
-  LocalConfig localConfig;
   if (std::filesystem::exists(config_path)) {
     std::ifstream config_file(config_path);
-
     if (!config_file.is_open()) {
-      std::cerr << "Could not open the file" << std::endl;
+      std::cerr << "Could not open the file " << config_path << std::endl;
     }
 
     std::string line;
@@ -47,40 +45,53 @@ Config Config::Load(Repository &repo) {
       }
     }
 
-    for (int i = 0; i < tokens.size(); i += 2) {
+    for (size_t i = 0; i < tokens.size(); i += 2) {
       if (tokens[i] == "Name" || tokens[i] == "name") {
-        localConfig.display_name = tokens[i + 1];
+        display_name = tokens[i + 1];
       } else if (tokens[i] == "id" || tokens[i] == "Id") {
-        localConfig.id = tokens[i + 1];
-      } else {
-        continue;
+        id = tokens[i + 1];
       }
     }
   } else {
     std::ofstream config(config_path);
-
     if (!config.is_open()) {
       std::cerr << "Could not create new config file" << std::endl;
     }
 
-    config << "id" << "=" << "cat" << std::endl;
-    config << "name" << "=" << repo.name() << std::endl;
-
-    localConfig.id = "cat";
-    localConfig.display_name = repo.name();
-
+    config << "id" << "=" << id << std::endl;
+    config << "name" << "=" << display_name << std::endl;
     config.close();
   }
 
-  // return Config(localConfig);
+  return LocalConfig(std::move(id), std::move(display_name));
+}
 
-  // Load Pet Config
-  std::string path = std::getenv("GIT_PET_PATH");
-  std::filesystem::path pet_path = std::filesystem::path(path) / localConfig.id;
+void LocalConfig::Save(const Repository &repo) const {
+  std::filesystem::path config_path =
+      std::filesystem::path(repo.directory()) / "pet.config";
+  std::ofstream config(config_path);
+
+  if (!config.is_open()) {
+    std::cerr << "Could not open config file for writing" << std::endl;
+    return;
+  }
+
+  config << "id=" << _id << std::endl;
+  config << "name=" << _display_name << std::endl;
+}
+
+// ==========================================
+// PetConfig Implementation
+// ==========================================
+
+PetConfig PetConfig::Load(const std::string &pet_id) {
+  const char* path_env = std::getenv("GIT_PET_PATH");
+  std::string path = path_env ? path_env : "";
+  std::filesystem::path pet_path = std::filesystem::path(path) / pet_id;
   std::filesystem::path pet_config_path = pet_path / "pet.toml";
 
   if (!std::filesystem::exists(pet_config_path)) {
-    std::cerr << "Could not find pet.toml in: " << pet_config_path << std::endl;
+    throw std::runtime_error("Could not find pet.toml in: " + pet_config_path.string());
   }
 
   std::vector<std::string> stageNames;
@@ -108,11 +119,10 @@ Config Config::Load(Repository &repo) {
     animationConfigs.emplace_back(*stage_name, fps, pet_path / *stage_name);
   }
 
-  PetConfig petConfig{localConfig.id, localConfig.display_name,
-                      std::move(stageNames), std::move(animationConfigs)};
+  std::string display_name = pet_id;
+  if (auto name_val = config["name"].value<std::string>()) {
+    display_name = *name_val;
+  }
 
-  return Config(localConfig, petConfig);
+  return PetConfig(pet_id, std::move(display_name), std::move(stageNames), std::move(animationConfigs));
 }
-
-const LocalConfig Config::localConfig() { return local_config; }
-const PetConfig Config::petConfig() { return pet_config; }
