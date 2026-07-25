@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include <toml.hpp>
+#include <toml++/toml.hpp>
 
 // ==========================================
 // LocalConfig Implementation
@@ -85,13 +85,14 @@ void LocalConfig::Save(const Repository &repo) const {
 // ==========================================
 
 PetConfig PetConfig::Load(const std::string &pet_id) {
-  const char* path_env = std::getenv("GIT_PET_PATH");
+  const char *path_env = std::getenv("GIT_PET_PATH");
   std::string path = path_env ? path_env : "";
   std::filesystem::path pet_path = std::filesystem::path(path) / pet_id;
   std::filesystem::path pet_config_path = pet_path / "pet.toml";
 
   if (!std::filesystem::exists(pet_config_path)) {
-    throw std::runtime_error("Could not find pet.toml in: " + pet_config_path.string());
+    throw std::runtime_error("Could not find pet.toml in: " +
+                             pet_config_path.string());
   }
 
   std::vector<std::string> stageNames;
@@ -124,5 +125,6 @@ PetConfig PetConfig::Load(const std::string &pet_id) {
     display_name = *name_val;
   }
 
-  return PetConfig(pet_id, std::move(display_name), std::move(stageNames), std::move(animationConfigs));
+  return PetConfig(pet_id, std::move(display_name), std::move(stageNames),
+                   std::move(animationConfigs));
 }

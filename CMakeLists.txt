@@ -14,7 +14,22 @@ FetchContent_Declare(
     GIT_TAG v7.0.1
 )
 
-FetchContent_MakeAvailable(ftxui)
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG        v3.4.0
+)
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG        master
+)
+
+FetchContent_MakeAvailable(ftxui tomlplusplus stb)
+
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBGIT2 REQUIRED libgit2)
@@ -38,5 +53,7 @@ target_link_libraries(git-pet PRIVATE
     ftxui::screen
     ftxui::dom
     ftxui::component
+    tomlplusplus::tomlplusplus
+    stb
     ${LIBGIT2_LIBRARIES}
 )
