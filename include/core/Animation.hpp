@@ -10,6 +10,8 @@ public:
 
   Animation(std::vector<Image> frames) : _frames(frames) {};
 
+  void setFrameTime(std::chrono::milliseconds time) { frameTime = time; }
+
   void update(std::chrono::milliseconds dt);
   const Image &currentFrame() const;
 

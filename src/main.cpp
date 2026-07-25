@@ -1,5 +1,6 @@
 #include "core/Animation.hpp"
 #include "core/AnimationPlayer.hpp"
+#include "core/Config.hpp"
 #include "core/Pet.hpp"
 #include "screen/ui/widgets/CenteredLayout.hpp"
 #include "screen/ui/widgets/GitCard.hpp"
@@ -19,6 +20,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iostream>
+#include <ostream>
 #include <string>
 #include <thread>
 #define STB_IMAGE_IMPLEMENTATION
@@ -41,29 +44,19 @@ int main() {
   PetStage stage = PetStage::Egg;
   int commitCount = repo.commitCount();
   if (commitCount > 100) {
-    stage = PetStage::Adult;
+    stage = PetStage::Baby;
   } else if (commitCount > 50 && commitCount <= 100) {
-    stage = PetStage::Teen;
+    stage = PetStage::Baby;
   } else if (commitCount > 20 && commitCount <= 50) {
     stage = PetStage::Baby;
   } else {
     stage = PetStage::Egg;
   }
 
-  filesystem::path egg_path("assets/egg");
-  filesystem::path baby_path("assets/baby");
-  filesystem::path egg_animation_path = path / egg_path;
-  filesystem::path baby_animation_path = path / baby_path;
-  Animation eggAnimation = Animation::Load(egg_animation_path);
-  Animation babyAnimation = Animation::Load(baby_animation_path);
-  AnimationPlayer animationPlayer;
+  LocalConfig localconfig = LocalConfig::Load(repo);
+  PetConfig petconfig = PetConfig::Load(localconfig.id());
 
-  animationPlayer.add("egg", std::move(eggAnimation));
-  animationPlayer.add("baby", std::move(babyAnimation));
-
-  Pet pet("Milo", std::move(animationPlayer), stage);
-
-  pet.animationPlayer().play(toLower(pet.stage()));
+  Pet pet = Pet::Load(localconfig, petconfig, stage);
 
   int active_view = 0;
   bool show_menu = false;
