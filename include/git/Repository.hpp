@@ -28,6 +28,7 @@ public:
   Commit head() const;
 
   std::vector<Commit> history(size_t limit = 20) const;
+  std::string directory() const;
 
   bool isDirty() const;
 

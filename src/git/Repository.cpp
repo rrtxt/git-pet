@@ -9,6 +9,7 @@
 #include <git2/repository.h>
 #include <git2/types.h>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 Repository::Repository(const std::filesystem::path &path) {
@@ -26,7 +27,6 @@ Repository::Repository(const std::filesystem::path &path) {
     _name = path.filename().string();
   }
 }
-
 
 std::string Repository::name() const { return _name; }
 
@@ -185,6 +185,14 @@ Commit Repository::head() const {
   git_reference_free(head);
 
   return new_commit;
+}
+
+std::string Repository::directory() const {
+  if (!repo) {
+    return " ";
+  }
+
+  return git_repository_path(repo);
 }
 
 Repository::~Repository() { git_repository_free(repo); }
