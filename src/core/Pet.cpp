@@ -13,7 +13,7 @@ std::string toLower(std::string str) {
 }
 } // namespace
 
-Pet Pet::Load(const LocalConfig &localConfig, const PetConfig &petConfig, PetStage stage) {
+Pet Pet::Load(const LocalConfig &localConfig, const PetConfig &petConfig, PetStage stage, PetMood mood) {
   AnimationPlayer animationPlayer;
 
   for (const auto &animConfig : petConfig.animationConfigs()) {
@@ -24,10 +24,25 @@ Pet Pet::Load(const LocalConfig &localConfig, const PetConfig &petConfig, PetSta
     animationPlayer.add(animConfig.name, std::move(anim));
   }
 
-  Pet pet(localConfig.displayName(), std::move(animationPlayer), stage);
+  Pet pet(localConfig.displayName(), std::move(animationPlayer), stage, mood);
   pet.animationPlayer().play(toLower(pet.stage()));
 
   return pet;
+}
+
+std::string Pet::mood() const {
+  switch (_mood) {
+  case PetMood::Sad:
+    return "Sad";
+  case PetMood::Happy:
+    return "Happy";
+  case PetMood::Angry:
+    return "Angry";
+  case PetMood::Neutral:
+    return "Neutral";
+  default:
+    return "Unknown";
+  }
 }
 
 std::string Pet::name() const { return _name; }
