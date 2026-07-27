@@ -56,7 +56,16 @@ int main() {
   LocalConfig localconfig = LocalConfig::Load(repo);
   PetConfig petconfig = PetConfig::Load(localconfig.id());
 
-  Pet pet = Pet::Load(localconfig, petconfig, stage);
+  PetMood initialMood = PetMood::Neutral;
+  if (repo.hasConflicts()) {
+    initialMood = PetMood::Angry;
+  } else if (repo.commitCountPerWeek() >= 20 || repo.commitCountPerDay() >= 10) {
+    initialMood = PetMood::Happy;
+  } else if (repo.commitCountPerWeek() <= 5) {
+    initialMood = PetMood::Sad;
+  }
+
+  Pet pet = Pet::Load(localconfig, petconfig, stage, initialMood);
 
   int active_view = 0;
   bool show_menu = false;
@@ -65,6 +74,16 @@ int main() {
   auto screen = ScreenInteractive::TerminalOutput();
 
   auto component = Renderer([&] {
+    PetMood mood = PetMood::Neutral;
+    if (repo.hasConflicts()) {
+      mood = PetMood::Angry;
+    } else if (repo.commitCountPerWeek() >= 20 || repo.commitCountPerDay() >= 10) {
+      mood = PetMood::Happy;
+    } else if (repo.commitCountPerWeek() <= 5) {
+      mood = PetMood::Sad;
+    }
+    pet.setMood(mood);
+
     Element card =
         GitCard(pet, repo, active_view, show_menu, selected_menu_item);
     // Constrain the card to a fixed size of 80x25

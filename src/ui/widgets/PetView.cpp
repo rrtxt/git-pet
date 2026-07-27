@@ -57,9 +57,27 @@ Element PetView(Pet &pet) {
     });
   }
 
+  Element moodElement;
+  switch (pet.moodEnum()) {
+  case PetMood::Sad:
+    moodElement = text("Mood: Sad") | color(Color::Blue);
+    break;
+  case PetMood::Happy:
+    moodElement = text("Mood: Happy") | color(Color::Green);
+    break;
+  case PetMood::Angry:
+    moodElement = text("Mood: Angry") | color(Color::Red) | bold;
+    break;
+  case PetMood::Neutral:
+  default:
+    moodElement = text("Mood: Neutral") | dim;
+    break;
+  }
+
   Element petStats = vbox({
       text(format("Pet: {}", pet.name())) | bold,
       text(format("Stage: {}", pet.stage())) | dim,
+      moodElement,
   });
 
   return vbox({
