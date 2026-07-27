@@ -7,7 +7,9 @@
 #include <git2/commit.h>
 #include <git2/refs.h>
 #include <git2/repository.h>
+#include <git2/status.h>
 #include <git2/types.h>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -193,6 +195,92 @@ std::string Repository::directory() const {
   }
 
   return git_repository_path(repo);
+}
+
+int status_callback(const char *path, unsigned int status_flags,
+                    void *payload) {
+  std::cout << path << " : " << status_flags << std::endl;
+  return 0;
+}
+
+void Repository::status() const {
+  git_status_options opts = GIT_STATUS_OPTIONS_INIT;
+  opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+  opts.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+
+  git_status_list *list = nullptr;
+  if (git_status_list_new(&list, repo, &opts) != 0) {
+    return;
+  }
+
+  size_t count = git_status_list_entrycount(list);
+
+  for (size_t i = 0; i < count; i++) {
+    const git_status_entry *entry = git_status_byindex(list, i);
+    if (!entry) continue;
+
+    const char *path = nullptr;
+    if (entry->head_to_index) {
+      path = entry->head_to_index->new_file.path;
+    } else if (entry->index_to_workdir) {
+      path = entry->index_to_workdir->new_file.path;
+    }
+
+    if (!path) continue;
+
+    std::string status_str;
+    if (entry->status & GIT_STATUS_CONFLICTED) {
+      status_str += " [CONFLICT]";
+    }
+    if (entry->status & (GIT_STATUS_INDEX_NEW | GIT_STATUS_WT_NEW)) {
+      status_str += " [NEW]";
+    }
+    if (entry->status & (GIT_STATUS_INDEX_MODIFIED | GIT_STATUS_WT_MODIFIED)) {
+      status_str += " [MODIFIED]";
+    }
+    if (entry->status & (GIT_STATUS_INDEX_DELETED | GIT_STATUS_WT_DELETED)) {
+      status_str += " [DELETED]";
+    }
+
+    std::cout << path << ":" << status_str << std::endl;
+  }
+
+  git_status_list_free(list);
+}
+
+bool Repository::isDirty() const {
+  git_status_options opts = GIT_STATUS_OPTIONS_INIT;
+  opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+  opts.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+
+  git_status_list *list = nullptr;
+  if (git_status_list_new(&list, repo, &opts) != 0) {
+    return false;
+  }
+
+  size_t count = git_status_list_entrycount(list);
+  bool dirty = false;
+  for (size_t i = 0; i < count; i++) {
+    const git_status_entry *entry = git_status_byindex(list, i);
+    if (entry && entry->status != GIT_STATUS_CURRENT && !(entry->status & GIT_STATUS_IGNORED)) {
+      dirty = true;
+      break;
+    }
+  }
+
+  git_status_list_free(list);
+  return dirty;
+}
+
+bool Repository::hasConflicts() const {
+  git_index *index = nullptr;
+  if (git_repository_index(&index, repo) != 0) {
+    return false;
+  }
+
+  bool has = git_index_has_conflicts(index) != 0;
+  git_index_free(index);
+  return has;
 }
 
 Repository::~Repository() { git_repository_free(repo); }

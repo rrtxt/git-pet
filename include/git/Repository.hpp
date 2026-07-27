@@ -30,7 +30,10 @@ public:
   std::vector<Commit> history(size_t limit = 20) const;
   std::string directory() const;
 
+  void status() const;
+
   bool isDirty() const;
+  bool hasConflicts() const;
 
   ~Repository();
 
