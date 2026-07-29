@@ -72,18 +72,19 @@ make run
 
 To run git-pet with animations, you need to configure your pet assets:
 
-1. Create a pet configuration folder containing a `pet.toml` and subfolders with frame PNGs for each stage.
+1. Create a pet configuration folder structure containing `pet.toml` inside a directory named after your pet's ID within the `GIT_PET_PATH` directory (e.g., `GIT_PET_PATH/cat/pet.toml`).
    Example directory structure:
    ```
-   assets/
-     pet.toml
-     egg/
-       egg1.png
-       egg2.png
-     baby/
-       baby1.png
-     teen/
-       teen1.png
+   GIT_PET_PATH/
+     cat/
+       pet.toml
+       egg/
+         egg1.png
+         egg2.png
+       baby/
+         baby1.png
+       teen/
+         teen1.png
    ```
 
    Example `pet.toml` configuration:
@@ -105,7 +106,15 @@ To run git-pet with animations, you need to configure your pet assets:
    ```bash
    export GIT_PET_PATH=/path/to/assets/parent
    ```
-   For example, if your folder is `/usr/local/share/git-pet/cat`, set `GIT_PET_PATH` to `/usr/local/share/git-pet`. The local configuration will default to loading "cat".
+   For example, if your pet configuration folder is at `/usr/local/share/git-pet/cat`, set `GIT_PET_PATH` to `/usr/local/share/git-pet`.
+
+3. Configure your local repository pet settings by creating or editing the `pet.config` file inside your repository's local `.git/` directory (e.g., `.git/pet.config`):
+   ```ini
+   id = "cat"
+   name = "Milo"
+   ```
+   * **id**: Specifies the target pet subdirectory to load within the `GIT_PET_PATH` (e.g., searching for the pet configuration and frame assets inside `/path/to/assets/parent/cat/`).
+   * **name**: Specifies the display name of your pet in the interface.
 
 ## Whats next
 
