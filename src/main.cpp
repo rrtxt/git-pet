@@ -44,7 +44,7 @@ int main() {
   PetStage stage = PetStage::Egg;
   int commitCount = repo.commitCount();
   if (commitCount > 100) {
-    stage = PetStage::Baby;
+    stage = PetStage::Adult;
   } else if (commitCount > 50 && commitCount <= 100) {
     stage = PetStage::Teen;
   } else if (commitCount > 20 && commitCount <= 50) {
