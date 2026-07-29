@@ -46,7 +46,7 @@ int main() {
   if (commitCount > 100) {
     stage = PetStage::Baby;
   } else if (commitCount > 50 && commitCount <= 100) {
-    stage = PetStage::Baby;
+    stage = PetStage::Teen;
   } else if (commitCount > 20 && commitCount <= 50) {
     stage = PetStage::Baby;
   } else {
@@ -59,7 +59,8 @@ int main() {
   PetMood initialMood = PetMood::Neutral;
   if (repo.hasConflicts()) {
     initialMood = PetMood::Angry;
-  } else if (repo.commitCountPerWeek() >= 20 || repo.commitCountPerDay() >= 10) {
+  } else if (repo.commitCountPerWeek() >= 20 ||
+             repo.commitCountPerDay() >= 10) {
     initialMood = PetMood::Happy;
   } else if (repo.commitCountPerWeek() <= 5) {
     initialMood = PetMood::Sad;
@@ -77,7 +78,8 @@ int main() {
     PetMood mood = PetMood::Neutral;
     if (repo.hasConflicts()) {
       mood = PetMood::Angry;
-    } else if (repo.commitCountPerWeek() >= 20 || repo.commitCountPerDay() >= 10) {
+    } else if (repo.commitCountPerWeek() >= 20 ||
+               repo.commitCountPerDay() >= 10) {
       mood = PetMood::Happy;
     } else if (repo.commitCountPerWeek() <= 5) {
       mood = PetMood::Sad;
