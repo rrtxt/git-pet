@@ -26,7 +26,7 @@ Animation Animation::Load(const std::filesystem::path &path) {
 }
 
 void Animation::update(std::chrono::milliseconds dt) {
-  if (!isPlaying) {
+  if (!isPlaying || _frames.empty()) {
     return;
   }
 
@@ -39,6 +39,10 @@ void Animation::update(std::chrono::milliseconds dt) {
 }
 
 const Image &Animation::currentFrame() const {
+  if (_frames.empty()) {
+    static const Image empty_image;
+    return empty_image;
+  }
   return _frames[currentFrameIndex];
 }
 

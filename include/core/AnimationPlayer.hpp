@@ -18,5 +18,5 @@ public:
 
 private:
   std::unordered_map<std::string, Animation> _animationMap;
-  Animation *_currentAnimation = nullptr;
+  std::string _currentAnimationName;
 };

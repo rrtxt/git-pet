@@ -4,8 +4,12 @@
 #include <string>
 
 void AnimationPlayer::update(std::chrono::milliseconds dt) {
-  if (_currentAnimation)
-    _currentAnimation->update(dt);
+  if (!_currentAnimationName.empty()) {
+    auto it = _animationMap.find(_currentAnimationName);
+    if (it != _animationMap.end()) {
+      it->second.update(dt);
+    }
+  }
 }
 
 void AnimationPlayer::add(std::string name, Animation animation) {
@@ -18,23 +22,34 @@ void AnimationPlayer::play(std::string name) {
     return;
   }
 
-  if (_currentAnimation) {
-    _currentAnimation->stop();
+  if (!_currentAnimationName.empty()) {
+    auto old_it = _animationMap.find(_currentAnimationName);
+    if (old_it != _animationMap.end()) {
+      old_it->second.stop();
+    }
   }
-  _currentAnimation = &it->second;
-
-  _currentAnimation->play();
+  _currentAnimationName = name;
+  it->second.play();
 }
 
 void AnimationPlayer::stop() {
-  if (_currentAnimation)
-    _currentAnimation->stop();
+  if (!_currentAnimationName.empty()) {
+    auto it = _animationMap.find(_currentAnimationName);
+    if (it != _animationMap.end()) {
+      it->second.stop();
+    }
+  }
 }
 
 const Image &AnimationPlayer::currentFrame() const {
-  if (!_currentAnimation) {
+  if (_currentAnimationName.empty()) {
     static const Image empty_image;
     return empty_image;
   }
-  return _currentAnimation->currentFrame();
+  auto it = _animationMap.find(_currentAnimationName);
+  if (it == _animationMap.end()) {
+    static const Image empty_image;
+    return empty_image;
+  }
+  return it->second.currentFrame();
 }
