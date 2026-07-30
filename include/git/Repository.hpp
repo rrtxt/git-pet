@@ -13,6 +13,8 @@
 class Repository {
 public:
   explicit Repository(const std::filesystem::path &path);
+  Repository(const Repository &) = delete;
+  Repository &operator=(const Repository &) = delete;
 
   std::string name() const;
 
