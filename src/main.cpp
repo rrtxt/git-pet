@@ -164,6 +164,10 @@ int main() {
         }
       }
       if (event == Event::Character('q') || event == Event::Escape) {
+        animation_thread.request_stop();
+        if (animation_thread.joinable()) {
+          animation_thread.join();
+        }
         screen.ExitLoopClosure()();
         return true;
       }
