@@ -25,7 +25,6 @@
 #include <ostream>
 #include <string>
 #include <thread>
-#define STB_IMAGE_IMPLEMENTATION
 using namespace ftxui;
 using namespace std;
 using namespace std::chrono_literals;
