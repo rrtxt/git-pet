@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <csignal>
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -29,6 +30,24 @@ using namespace ftxui;
 using namespace std;
 using namespace std::chrono_literals;
 
+namespace {
+void cleanupTerminal() {
+  // Disable mouse tracking (1000, 1002, 1003, 1006)
+  std::cerr << "\033[?1000l\033[?1002l\033[?1003l\033[?1006l";
+  // Show cursor
+  std::cerr << "\033[?25h";
+  // Exit alternate screen buffer
+  std::cerr << "\033[?1049l";
+  std::cerr << std::flush;
+}
+
+void signalHandler(int signal) {
+  cleanupTerminal();
+  std::signal(signal, SIG_DFL);
+  std::raise(signal);
+}
+} // namespace
+
 std::string toLower(std::string str) {
   std::transform(str.begin(), str.end(), str.begin(),
                  [](unsigned char c) { return std::tolower(c); });
@@ -36,6 +55,20 @@ std::string toLower(std::string str) {
 }
 
 int main() {
+  std::signal(SIGINT, signalHandler);
+  std::signal(SIGTERM, signalHandler);
+#ifdef SIGSEGV
+  std::signal(SIGSEGV, signalHandler);
+#endif
+#ifdef SIGABRT
+  std::signal(SIGABRT, signalHandler);
+#endif
+#ifdef SIGILL
+  std::signal(SIGILL, signalHandler);
+#endif
+#ifdef SIGFPE
+  std::signal(SIGFPE, signalHandler);
+#endif
   try {
     GitLibrary git;
 
@@ -94,11 +127,9 @@ int main() {
       return CenteredLayout(std::move(card));
     });
 
-    std::atomic<bool> running = true;
-
     // Run a thread to emit event to update pet animation
-    std::thread animation_thread([&] {
-      while (running) {
+    std::jthread animation_thread([&](std::stop_token stop) {
+      while (!stop.stop_requested()) {
         std::this_thread::sleep_for(16ms);
         screen.PostEvent(Event::Custom);
       }
@@ -150,10 +181,7 @@ int main() {
     });
 
     screen.Loop(component);
-    running = false;
-    if (animation_thread.joinable()) {
-      animation_thread.join();
-    }
+    animation_thread.request_stop();
 
     return 0;
   } catch (const std::exception &e) {
