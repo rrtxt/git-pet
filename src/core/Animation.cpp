@@ -3,21 +3,29 @@
 #include <core/Animation.hpp>
 #include <filesystem>
 #include <vector>
+#include <iostream>
 
 Animation Animation::Load(const std::filesystem::path &path) {
   std::vector<std::filesystem::path> paths;
-  for (const auto &entry : std::filesystem::directory_iterator(path)) {
-    if (entry.is_regular_file()) {
-      paths.push_back(entry);
+  if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
+    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+      if (entry.is_regular_file()) {
+        paths.push_back(entry);
+      }
     }
   }
 
   std::sort(paths.begin(), paths.end());
 
   std::vector<Image> frames;
-  for (const auto &path : paths) {
-    Image frame = Image::Load(path);
-    frames.push_back(frame);
+  for (const auto &p : paths) {
+    try {
+      Image frame = Image::Load(p);
+      frames.push_back(frame);
+    } catch (const std::exception &e) {
+      std::cerr << "Warning: Failed to load animation frame from " << p.string()
+                << " - " << e.what() << std::endl;
+    }
   }
 
   Animation animation(frames);

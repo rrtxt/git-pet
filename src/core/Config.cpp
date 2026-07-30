@@ -91,8 +91,16 @@ PetConfig PetConfig::Load(const std::string &pet_id) {
   std::filesystem::path pet_config_path = pet_path / "pet.toml";
 
   if (!std::filesystem::exists(pet_config_path)) {
-    throw std::runtime_error("Could not find pet.toml in: " +
-                             pet_config_path.string());
+    if (!path_env) {
+      throw std::runtime_error(
+          "Could not find pet.toml for pet id '" + pet_id + "'.\n" +
+          "The environment variable 'GIT_PET_PATH' is not set.\n" +
+          "Please set GIT_PET_PATH to point to your pet assets directory (e.g. export GIT_PET_PATH=/path/to/assets).");
+    } else {
+      throw std::runtime_error(
+          "Could not find pet.toml in: " + pet_config_path.string() + "\n" +
+          "Please verify that the directory exists and contains pet.toml.");
+    }
   }
 
   std::vector<std::string> stageNames;
@@ -102,7 +110,7 @@ PetConfig PetConfig::Load(const std::string &pet_id) {
 
   auto *stages = config["stages"].as_array();
   if (!stages)
-    throw std::runtime_error("Missing 'stages' array");
+    throw std::runtime_error("Missing 'stages' array in pet.toml");
 
   for (const auto &stage_node : *stages) {
     auto stage_name = stage_node.value<std::string>();
@@ -115,7 +123,10 @@ PetConfig PetConfig::Load(const std::string &pet_id) {
     if (!table)
       continue;
 
-    int fps = static_cast<int>(table->get_as<int64_t>("fps")->get());
+    int fps = 0;
+    if (auto fps_node = table->get_as<int64_t>("fps")) {
+      fps = static_cast<int>(fps_node->get());
+    }
 
     animationConfigs.emplace_back(*stage_name, fps, pet_path / *stage_name);
   }
