@@ -149,7 +149,10 @@ int main() {
   });
 
   screen.Loop(component);
-  animation_thread.detach();
+  running = false;
+  if (animation_thread.joinable()) {
+    animation_thread.join();
+  }
 
   return 0;
 }
