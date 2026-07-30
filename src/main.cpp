@@ -128,7 +128,7 @@ int main() {
     });
 
     // Run a thread to emit event to update pet animation
-    std::jthread animation_thread([&](std::stop_token stop) {
+    std::jthread animation_thread([&screen](std::stop_token stop) {
       while (!stop.stop_requested()) {
         std::this_thread::sleep_for(16ms);
         screen.PostEvent(Event::Custom);
