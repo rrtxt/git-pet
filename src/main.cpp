@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
+#include <ftxui/component/loop.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/node.hpp>
@@ -107,6 +108,8 @@ int main() {
 
     auto screen = ScreenInteractive::TerminalOutput();
 
+    std::atomic<bool> running = true;
+
     auto component = Renderer([&] {
       PetMood mood = PetMood::Neutral;
       if (repo.hasConflicts()) {
@@ -124,14 +127,6 @@ int main() {
       // Constrain the card to a fixed size of 80x25
       card = card | size(WIDTH, EQUAL, 80) | size(HEIGHT, EQUAL, 25);
       return CenteredLayout(std::move(card));
-    });
-
-    // Run a thread to emit event to update pet animation
-    std::jthread animation_thread([&screen](std::stop_token stop) {
-      while (!stop.stop_requested()) {
-        std::this_thread::sleep_for(16ms);
-        screen.PostEvent(Event::Custom);
-      }
     });
 
     auto last = std::chrono::steady_clock::now();
@@ -163,11 +158,8 @@ int main() {
         }
       }
       if (event == Event::Character('q') || event == Event::Escape) {
-        animation_thread.request_stop();
-        if (animation_thread.joinable()) {
-          animation_thread.join();
-        }
-        screen.ExitLoopClosure()();
+        running = false;
+        screen.Exit();
         return true;
       }
       if (event == Event::Custom) {
@@ -183,8 +175,35 @@ int main() {
       return false;
     });
 
-    screen.Loop(component);
-    animation_thread.request_stop();
+    // Start animation thread after all event handlers are set up.
+    std::thread animation_thread([&screen, &running] {
+      while (running) {
+        std::this_thread::sleep_for(16ms);
+        if (running) {
+          screen.PostEvent(Event::Custom);
+        }
+      }
+    });
+
+    // Use the Loop API directly instead of screen.Loop(component).
+    // screen.Loop() creates a Loop object internally and destroys it
+    // before returning. Loop::~Loop() calls Uninstall() which drains
+    // the event buffer. If the animation thread is still posting events
+    // during that drain, it causes a race condition and crashes.
+    // By managing the Loop object ourselves, we can stop the animation
+    // thread AFTER the loop finishes but BEFORE the Loop is destroyed.
+    {
+      ftxui::Loop loop(&screen, component);
+      while (!loop.HasQuitted()) {
+        loop.RunOnce();
+      }
+
+      // Stop the animation thread BEFORE Loop destructor runs.
+      running = false;
+      if (animation_thread.joinable()) {
+        animation_thread.join();
+      }
+    } // Loop::~Loop() runs here — animation thread is already stopped.
 
     return 0;
   } catch (const std::exception &e) {
