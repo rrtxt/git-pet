@@ -144,37 +144,40 @@ int main() {
         }
       }
       if (event == Event::Character('q') || event == Event::Escape) {
+        running = false;
         screen.Exit();
         return true;
       }
-      // --- DISABLED FOR DEBUGGING ---
-      // if (event == Event::Custom) {
-      //   auto now = std::chrono::steady_clock::now();
-      //   auto dt =
-      //       std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
-      //   last = now;
-      //   pet.animationPlayer().update(dt);
-      //   return true;
-      // }
+      // --- TEST: Thread enabled, animation update DISABLED ---
+      if (event == Event::Custom) {
+        // pet.animationPlayer().update(dt);  // STILL DISABLED
+        return true;
+      }
       return false;
     });
 
-    // --- DISABLED FOR DEBUGGING ---
-    // std::thread animation_thread([&screen, &running] {
-    //   while (running) {
-    //     std::this_thread::sleep_for(16ms);
-    //     if (running) {
-    //       screen.PostEvent(Event::Custom);
-    //     }
-    //   }
-    // });
+    // --- Thread RE-ENABLED for testing ---
+    std::thread animation_thread([&screen, &running] {
+      while (running) {
+        std::this_thread::sleep_for(16ms);
+        if (running) {
+          screen.PostEvent(Event::Custom);
+        }
+      }
+    });
 
     {
       ftxui::Loop loop(&screen, component);
       while (!loop.HasQuitted()) {
         loop.RunOnce();
       }
-    } // Loop::~Loop() runs here.
+
+      // Stop the animation thread BEFORE Loop destructor runs.
+      running = false;
+      if (animation_thread.joinable()) {
+        animation_thread.join();
+      }
+    } // Loop::~Loop() runs here — animation thread is already stopped.
 
     return 0;
   } catch (const std::exception &e) {
