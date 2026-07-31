@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
-#include <ftxui/component/loop.hpp>
+#include <ftxui/component/animation.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/node.hpp>
@@ -25,7 +25,7 @@
 #include <iostream>
 #include <ostream>
 #include <string>
-#include <thread>
+
 using namespace ftxui;
 using namespace std;
 using namespace std::chrono_literals;
@@ -94,9 +94,10 @@ int main() {
 
     auto screen = ScreenInteractive::TerminalOutput();
 
-    std::atomic<bool> running = true;
-
-    auto component = Renderer([&] {
+    // Create a custom component that uses FTXUI's built-in animation system.
+    // OnAnimation runs on the main thread — no background thread needed.
+    auto last = animation::Clock::now();
+    auto render_component = Renderer([&] {
       PetMood mood = PetMood::Neutral;
       if (repo.hasConflicts()) {
         mood = PetMood::Angry;
@@ -108,6 +109,9 @@ int main() {
       }
       pet.setMood(mood);
 
+      // Request the next animation frame so OnAnimation keeps being called.
+      animation::RequestAnimationFrame();
+
       Element card =
           GitCard(pet, repo, active_view, show_menu, selected_menu_item);
       // Constrain the card to a fixed size of 80x25
@@ -115,8 +119,7 @@ int main() {
       return CenteredLayout(std::move(card));
     });
 
-    auto last = std::chrono::steady_clock::now();
-    component = CatchEvent(component, [&](Event event) {
+    auto component = CatchEvent(render_component, [&](Event event) {
       if (event == Event::Tab) {
         show_menu = !show_menu;
         if (show_menu) {
@@ -144,40 +147,43 @@ int main() {
         }
       }
       if (event == Event::Character('q') || event == Event::Escape) {
-        running = false;
         screen.Exit();
-        return true;
-      }
-      // --- TEST: Thread enabled, animation update DISABLED ---
-      if (event == Event::Custom) {
-        // pet.animationPlayer().update(dt);  // STILL DISABLED
         return true;
       }
       return false;
     });
 
-    // --- Thread RE-ENABLED for testing ---
-    std::thread animation_thread([&screen, &running] {
-      while (running) {
-        std::this_thread::sleep_for(16ms);
-        if (running) {
-          screen.PostEvent(Event::Custom);
-        }
-      }
-    });
-
-    {
-      ftxui::Loop loop(&screen, component);
-      while (!loop.HasQuitted()) {
-        loop.RunOnce();
+    // Update pet animation using FTXUI's animation system (main thread only).
+    // We use a wrapper component that overrides OnAnimation.
+    class AnimatedComponent : public ComponentBase {
+    public:
+      AnimatedComponent(Component child, Pet& pet)
+          : pet_(pet) {
+        Add(child);
       }
 
-      // Stop the animation thread BEFORE Loop destructor runs.
-      running = false;
-      if (animation_thread.joinable()) {
-        animation_thread.join();
+      Element OnRender() override {
+        return ComponentBase::OnRender();
       }
-    } // Loop::~Loop() runs here — animation thread is already stopped.
+
+      void OnAnimation(animation::Params& params) override {
+        auto dt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            params.duration());
+        pet_.animationPlayer().update(dt_ms);
+        animation::RequestAnimationFrame();
+        ComponentBase::OnAnimation(params);
+      }
+
+    private:
+      Pet& pet_;
+    };
+
+    auto animated = Make<AnimatedComponent>(component, pet);
+
+    // Request the first animation frame to kick off the loop.
+    animation::RequestAnimationFrame();
+
+    screen.Loop(animated);
 
     return 0;
   } catch (const std::exception &e) {
