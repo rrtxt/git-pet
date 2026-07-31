@@ -55,20 +55,6 @@ std::string toLower(std::string str) {
 }
 
 int main() {
-  std::signal(SIGINT, signalHandler);
-  std::signal(SIGTERM, signalHandler);
-#ifdef SIGSEGV
-  std::signal(SIGSEGV, signalHandler);
-#endif
-#ifdef SIGABRT
-  std::signal(SIGABRT, signalHandler);
-#endif
-#ifdef SIGILL
-  std::signal(SIGILL, signalHandler);
-#endif
-#ifdef SIGFPE
-  std::signal(SIGFPE, signalHandler);
-#endif
   try {
     GitLibrary git;
 
@@ -158,52 +144,37 @@ int main() {
         }
       }
       if (event == Event::Character('q') || event == Event::Escape) {
-        running = false;
         screen.Exit();
         return true;
       }
-      if (event == Event::Custom) {
-        auto now = std::chrono::steady_clock::now();
-        auto dt =
-            std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
-        last = now;
-
-        // pet.update(dt);
-        pet.animationPlayer().update(dt);
-        return true;
-      }
+      // --- DISABLED FOR DEBUGGING ---
+      // if (event == Event::Custom) {
+      //   auto now = std::chrono::steady_clock::now();
+      //   auto dt =
+      //       std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
+      //   last = now;
+      //   pet.animationPlayer().update(dt);
+      //   return true;
+      // }
       return false;
     });
 
-    // Start animation thread after all event handlers are set up.
-    std::thread animation_thread([&screen, &running] {
-      while (running) {
-        std::this_thread::sleep_for(16ms);
-        if (running) {
-          screen.PostEvent(Event::Custom);
-        }
-      }
-    });
+    // --- DISABLED FOR DEBUGGING ---
+    // std::thread animation_thread([&screen, &running] {
+    //   while (running) {
+    //     std::this_thread::sleep_for(16ms);
+    //     if (running) {
+    //       screen.PostEvent(Event::Custom);
+    //     }
+    //   }
+    // });
 
-    // Use the Loop API directly instead of screen.Loop(component).
-    // screen.Loop() creates a Loop object internally and destroys it
-    // before returning. Loop::~Loop() calls Uninstall() which drains
-    // the event buffer. If the animation thread is still posting events
-    // during that drain, it causes a race condition and crashes.
-    // By managing the Loop object ourselves, we can stop the animation
-    // thread AFTER the loop finishes but BEFORE the Loop is destroyed.
     {
       ftxui::Loop loop(&screen, component);
       while (!loop.HasQuitted()) {
         loop.RunOnce();
       }
-
-      // Stop the animation thread BEFORE Loop destructor runs.
-      running = false;
-      if (animation_thread.joinable()) {
-        animation_thread.join();
-      }
-    } // Loop::~Loop() runs here — animation thread is already stopped.
+    } // Loop::~Loop() runs here.
 
     return 0;
   } catch (const std::exception &e) {
