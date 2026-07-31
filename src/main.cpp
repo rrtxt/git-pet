@@ -2,6 +2,7 @@
 #include "core/AnimationPlayer.hpp"
 #include "core/Config.hpp"
 #include "core/Pet.hpp"
+#include "screen/ui/widgets/AnimatedComponent.hpp"
 #include "screen/ui/widgets/CenteredLayout.hpp"
 #include "screen/ui/widgets/GitCard.hpp"
 #include <chrono>
@@ -152,31 +153,6 @@ int main() {
       }
       return false;
     });
-
-    // Update pet animation using FTXUI's animation system (main thread only).
-    // We use a wrapper component that overrides OnAnimation.
-    class AnimatedComponent : public ComponentBase {
-    public:
-      AnimatedComponent(Component child, Pet& pet)
-          : pet_(pet) {
-        Add(child);
-      }
-
-      Element OnRender() override {
-        return ComponentBase::OnRender();
-      }
-
-      void OnAnimation(animation::Params& params) override {
-        auto dt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            params.duration());
-        pet_.animationPlayer().update(dt_ms);
-        animation::RequestAnimationFrame();
-        ComponentBase::OnAnimation(params);
-      }
-
-    private:
-      Pet& pet_;
-    };
 
     auto animated = Make<AnimatedComponent>(component, pet);
 
