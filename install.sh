@@ -162,11 +162,12 @@ EOF
 
   setup_shell
 
-  # Warn early if libgit2 is missing at runtime.
+  # Release builds are static; this mainly catches --local builds whose
+  # shared libraries (e.g. libgit2) are missing at runtime.
   if command -v ldd >/dev/null 2>&1 && ldd "$BIN_DIR/git-pet" 2>/dev/null | grep -q "not found"; then
     warn "Some shared libraries are missing:"
     ldd "$BIN_DIR/git-pet" | grep "not found" >&2
-    warn "Install libgit2 (e.g. 'sudo apt-get install libgit2-1.7') and try again."
+    warn "Install the missing libraries with your package manager and try again."
   fi
 
   echo

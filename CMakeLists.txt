@@ -41,6 +41,10 @@ target_include_directories(stb INTERFACE
     ${stb_image_resize_SOURCE_DIR}
 )
 
+# Link libgit2 and the C++ runtime statically, so the binary runs on systems
+# without libgit2 installed (used for release builds).
+option(GIT_PET_STATIC "Statically link libgit2 and the C++ runtime" OFF)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBGIT2 REQUIRED libgit2)
 
@@ -65,5 +69,12 @@ target_link_libraries(git-pet PRIVATE
     ftxui::component
     tomlplusplus::tomlplusplus
     stb
-    ${LIBGIT2_LIBRARIES}
 )
+
+if(GIT_PET_STATIC)
+    # STATIC_LDFLAGS also pulls in libgit2's private dependencies
+    target_link_libraries(git-pet PRIVATE ${LIBGIT2_STATIC_LDFLAGS})
+    target_link_options(git-pet PRIVATE -static-libstdc++ -static-libgcc)
+else()
+    target_link_libraries(git-pet PRIVATE ${LIBGIT2_LDFLAGS})
+endif()

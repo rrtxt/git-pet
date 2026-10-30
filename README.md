@@ -38,7 +38,7 @@ This downloads the latest release and:
 
 Restart your shell, then run `git-pet` inside any Git repository.
 
-The prebuilt binary links against the system libgit2, so make sure it is installed (e.g. `sudo apt-get install libgit2-1.7` on Ubuntu 24.04).
+The prebuilt binary has libgit2 built in, so it doesn't need libgit2 installed. It runs on any x86_64 Linux with glibc 2.35 or newer (Ubuntu 22.04+, Debian 12+, Fedora 36+, Arch, and others).
 
 ### Install a local build
 
