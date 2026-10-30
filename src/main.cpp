@@ -7,9 +7,9 @@
 #include "screen/ui/widgets/GitCard.hpp"
 #include <chrono>
 #include <filesystem>
+#include <ftxui/component/animation.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
-#include <ftxui/component/animation.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/node.hpp>
@@ -27,26 +27,58 @@
 #include <ostream>
 #include <string>
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
+
 using namespace ftxui;
 using namespace std;
 using namespace std::chrono_literals;
 
 namespace {
-void cleanupTerminal() {
-  // Disable mouse tracking (1000, 1002, 1003, 1006)
-  std::cerr << "\033[?1000l\033[?1002l\033[?1003l\033[?1006l";
-  // Show cursor
-  std::cerr << "\033[?25h";
-  // Exit alternate screen buffer
-  std::cerr << "\033[?1049l";
-  std::cerr << std::flush;
-}
+class TerminalGuard {
+public:
+  TerminalGuard() {
+#ifdef _WIN32
+    out_ = GetStdHandle(STD_OUTPUT_HANDLE);
+    in_ = GetStdHandle(STD_INPUT_HANDLE);
+    has_out_ = GetConsoleMode(out_, &out_mode_);
+    has_in_ = GetConsoleMode(in_, &in_mode_);
+#endif
+  }
 
-void signalHandler(int signal) {
-  cleanupTerminal();
-  std::signal(signal, SIG_DFL);
-  std::raise(signal);
-}
+  ~TerminalGuard() {
+    // Disable mouse tracking, show cursor, reset cursor to the user's default.
+    std::cout << "\033[?1000l\033[?1002l\033[?1003l\033[?1006l"
+              << "\033[?25h"
+              << "\033[0 q" << std::flush;
+#ifdef _WIN32
+    if (has_out_)
+      SetConsoleMode(out_, out_mode_);
+    if (has_in_)
+      SetConsoleMode(in_, in_mode_);
+#endif
+  }
+
+  TerminalGuard(const TerminalGuard &) = delete;
+  TerminalGuard &operator=(const TerminalGuard &) = delete;
+
+private:
+#ifdef _WIN32
+  HANDLE out_ = nullptr;
+  HANDLE in_ = nullptr;
+  DWORD out_mode_ = 0;
+  DWORD in_mode_ = 0;
+  BOOL has_out_ = FALSE;
+  BOOL has_in_ = FALSE;
+#endif
+};
 } // namespace
 
 std::string toLower(std::string str) {
@@ -56,6 +88,8 @@ std::string toLower(std::string str) {
 }
 
 int main() {
+  // Must be constructed before anything queries FTXUI's terminal/color support.
+  TerminalGuard terminal_guard;
   try {
     GitLibrary git;
 
