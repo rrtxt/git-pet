@@ -23,13 +23,23 @@ FetchContent_Declare(
 FetchContent_Declare(
     stb
     GIT_REPOSITORY https://github.com/nothings/stb.git
-    GIT_TAG        master
+    GIT_TAG        003501f6d7a8668ce8b6d875e34dd97ad0d5d5b5
 )
 
-FetchContent_MakeAvailable(ftxui tomlplusplus stb)
+# stb_image_resize2.h moved out of stb into its own repo
+FetchContent_Declare(
+    stb_image_resize
+    GIT_REPOSITORY https://github.com/nothings/stb_image_resize.git
+    GIT_TAG        2768987dbd7119eb840104b7a3f96ff09d21a7b4
+)
+
+FetchContent_MakeAvailable(ftxui tomlplusplus stb stb_image_resize)
 
 add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+target_include_directories(stb INTERFACE
+    ${stb_SOURCE_DIR}
+    ${stb_image_resize_SOURCE_DIR}
+)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBGIT2 REQUIRED libgit2)
